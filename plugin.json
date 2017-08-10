@@ -1,0 +1,97 @@
+{
+  "name": "BMC Jira Plugin",
+  "version": "0.9.1",
+  "meterVersionRequired": "4.7.0-852",
+  "unsupportedPlatforms": [],
+  "tags": "Jira",
+  "description": "Ingests tickets from Jira",
+  "command_lua": "",
+  "postExtract_lua": "",
+  "command": "java -jar target/meter-plugin-jira-0.9.0.jar",
+  "postExtract": "",
+  "ignore": "",
+  "icon": "icon.png",
+  "metrics": [
+  ],
+  "dashboards": [
+  ],
+  "paramArray": {
+    "itemTitle": [
+      "hostName","requestType"
+    ],
+    "schemaTitle": "Jira Instance"
+  },
+  "paramSchema": [
+    {
+      "title": "Host Name",
+      "name": "hostName",
+      "description": "The host of Jira server",
+      "type": "string",
+      "default": "127.0.0.1",
+      "required": true
+    },
+    {
+      "title": "Port",
+      "name": "port",
+      "description": "The API port of Jira server",
+      "type": "String",
+      "required": false
+    },
+    {
+      "title": "User Name",
+      "name": "userName",
+      "description": "The user of Jira server",
+      "type": "string",
+      "default": "",
+      "required": true
+    },
+    {
+      "title": "Password",
+      "name": "password",
+      "description": "The password of Jira server",
+      "default": "",
+      "type": "password",
+      "required": true
+    },
+	{
+      "title": "Product",
+      "name": "requestType",
+      "description": "Product",
+      "type": { "enum" : [["Jira Software", "Jira Software"], ["Jira Service Desk", "Jira Service Desk"]] },
+      "default": "",
+      "required" : true
+    },
+	{
+      "title": "Protocal Type",
+      "name": "protocalType",
+      "description": "Protocal Type",
+      "type": { "enum" : [["HTTP", "http"], ["HTTPS", "https"]] },
+      "required" : true
+    },
+	{
+      "title": "Field Mapping",
+      "name": "fields",
+      "description": "Jira TSI Fields Mapping Configuration",
+      "type": "array",
+      "items": {
+	  "type": "string"
+      },
+      "default": [ "{",
+        "\t\"eventDefinition\": {",
+        "\t\t\"properties\": {",
+        "\t\t\t\"app_id\": \"meter-plugin-jira\"",
+        "\t\t}",
+        "\t}",
+        "}"],
+      	"required": true
+    },
+    {
+      "title": "Poll Interval (min)",
+      "name": "pollInterval",
+      "description": "How often (in Min) to poll for events.",
+      "type": "integer",
+      "default": 15,
+      "required": true
+    }
+  ]
+}
