@@ -23,9 +23,9 @@ public class JiraTemplateValidator implements TemplateValidator {
         TSIEvent payload = template.getEventDefinition();
         Map<String, FieldItem> fieldItemMap = template.getFieldItemMap();
 
-        if (template.getFilter().isEmpty()) {
+        /*if (template.getFilter().isEmpty()) {
             throw new ValidationException(StringUtil.format(Constants.CONFIG_VALIDATION_FAILED, new Object[]{}));
-        }
+        }*/
        
         // validate payload configuration
         if (payload.getTitle() != null && payload.getTitle().startsWith("@") && !fieldItemMap.containsKey(payload.getTitle())) {
