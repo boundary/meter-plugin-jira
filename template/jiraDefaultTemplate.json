@@ -40,7 +40,7 @@
             "LastViewedDate": "@LASTVIEWEDDATE",
             "Time_to_first_response": "@TIME_TO_FIRST_RESPONCE",
             "ProjectName": "@PROJECTNAME",
-            "app_id": "Jira TSI Integration"
+            "app_id": "Jira TSI Integration Latest"
 
         },
         "createdAt": "@CREATED_AT",

@@ -131,7 +131,7 @@ public class JiraTicketsCollector implements Collector {
                                                 }
                                                 totalRecordsRead += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                                 System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + PluginConstants.METER_CHUNK_SIZE + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
-                                                startAt = startAt + jiraResponse.getValidEventList().size();
+                                                startAt = startAt + (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                                 validRecords += jiraResponse.getValidEventList().size();
                                                 totalJiraRecords+= (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                                 iteration += 1;
@@ -141,7 +141,7 @@ public class JiraTicketsCollector implements Collector {
                                                     System.err.println("following " + config.getRequestType() + " ids are large than allowed limits");
                                                     List<String> eventIds = new ArrayList<>();
                                                     for (TSIEvent event : jiraResponse.getInvalidEventList()) {
-                                                        eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FIELD_ID));
+                                                        eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FILED_KEY));
                                                     }
                                                     System.err.println("following " + config.getRequestType() + " ids are larger than allowed limits [" + String.join(",", eventIds) + "]");
                                                 }
