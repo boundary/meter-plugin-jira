@@ -141,7 +141,7 @@ public class JiraTicketsCollector implements Collector {
                                                     System.err.println("following " + config.getRequestType() + " ids are large than allowed limits");
                                                     List<String> eventIds = new ArrayList<>();
                                                     for (TSIEvent event : jiraResponse.getInvalidEventList()) {
-                                                        eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FILED_KEY));
+                                                        eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FIELD_ID));
                                                     }
                                                     System.err.println("following " + config.getRequestType() + " ids are larger than allowed limits [" + String.join(",", eventIds) + "]");
                                                 }
