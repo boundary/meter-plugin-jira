@@ -96,7 +96,7 @@
         "fieldId": "lastViewed"
     },
     "@SEVERITY": {
-        "fieldId": "priority"
+        "fieldId": "urgency"
     },
     "@PRIORITY": {
         "fieldId": "priority"
