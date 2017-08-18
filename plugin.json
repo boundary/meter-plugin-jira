@@ -16,6 +16,7 @@
   "paramArray": {
     "itemTitle": [
       "hostName",
+      "source",
       "requestType"
     ],
     "schemaTitle": "Jira Instance"
@@ -32,6 +33,10 @@
             "Jira Software"
           ],
           [
+            "Jira Core",
+            "Jira Core"
+          ],
+          [
             "Jira Service Desk",
             "Jira Service Desk"
           ]
@@ -39,6 +44,13 @@
       },
       "default": "",
       "required": true
+    },
+    {
+      "title": "Source",
+      "name": "source",
+      "description": "The source to display in the legend for the endpoint. Ex. www.google.com",
+      "type": "string",
+      "required": false
     },
     {
       "title": "Host Name",
@@ -72,9 +84,9 @@
       "required": true
     },
     {
-      "title": "Protocal Type",
+      "title": "Protocol Type",
       "name": "protocalType",
-      "description": "Protocal Type",
+      "description": "Protocol Type",
       "type": {
         "enum": [
           [

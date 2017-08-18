@@ -1,9 +1,9 @@
 {
     "config": {
-        "jiraHostName": "boundary.jira.com",
-        "jiraPort": "",
-        "jiraUserName": "santosh",
-        "jiraPassword": "alliswell@100",
+        "jiraHostName": "<hostName>",
+        "jiraPort": "<portNumber>",
+        "jiraUserName": "<userName>",
+        "jiraPassword": "<userPassword>",
         "tsiEventEndpoint": "https://api.truesight.bmc.com/v1/events",
         "tsiApiToken": "<Input TSI Api Token>",
         "retryConfig": 3,
@@ -40,7 +40,7 @@
             "LastViewedDate": "@LASTVIEWEDDATE",
             "Time_to_first_response": "@TIME_TO_FIRST_RESPONCE",
             "ProjectName": "@PROJECTNAME",
-            "app_id": "Jira TSI Integration Latest"
+            "app_id": "Jira TSI Integration"
 
         },
         "createdAt": "@CREATED_AT",
@@ -57,76 +57,58 @@
         }
     },
     "@ID": {
-        "fieldId": "id",
-        "fetchKey": "id"
+        "fieldId": "id"
     },
     "@KEY": {
-        "fieldId": "key",
-        "fetchKey": "key"
+        "fieldId": "key"
     },
     "@SUMMARY": {
-        "fieldId": "summary",
-        "fetchKey": "summary"
+        "fieldId": "summary"
     },
     "@ASSIGNEE": {
-        "fieldId": "assignee",
-        "fetchKey": "name"
+        "fieldId": "assignee"
     },
     "@CREATED_AT": {
-        "fieldId": "created",
-        "fetchKey": "created"
+        "fieldId": "created"
     },
     "@CREATOR": {
-        "fieldId": "creator",
-        "fetchKey": "name"
+        "fieldId": "creator"
     },
     "@LAST_MOD_DATE": {
-        "fieldId": "updated",
-        "fetchKey": "updated"
+        "fieldId": "updated"
     },
     "@DUE_DATE": {
-        "fieldId": "duedate",
-        "fetchKey": "duedate"
+        "fieldId": "duedate"
     },
     "@ISSUE_TYPE": {
-        "fieldId": "issuetype",
-        "fetchKey": "name"
+        "fieldId": "issuetype"
     },
     "@RESOLUTION": {
-        "fieldId": "resolution",
-        "fetchKey": "name"
+        "fieldId": "resolution"
     },
     "@RESOLUTION_DATE": {
-        "fieldId": "resolutiondate",
-        "fetchKey": "resolutiondate"
+        "fieldId": "resolutiondate"
     },
     "@DESCRIPTION": {
-        "fieldId": "description",
-        "fetchKey": "description"
+        "fieldId": "description"
     },
     "@LASTVIEWEDDATE": {
-        "fieldId": "lastViewed",
-        "fetchKey": "lastViewed"
+        "fieldId": "lastViewed"
     },
     "@SEVERITY": {
-        "fieldId": "priority",
-        "fetchKey": "name"
+        "fieldId": "priority"
     },
     "@PRIORITY": {
-        "fieldId": "priority",
-        "fetchKey": "name"
+        "fieldId": "priority"
     },
     "@STATUS": {
-        "fieldId": "status",
-        "fetchKey": "name"
+        "fieldId": "status"
     },
     "@TIME_TO_FIRST_RESPONCE": {
-        "fieldId": "customfield_10422",
-        "fetchKey": "value"
+        "fieldId": "customfield_10124"
     },
     "@PROJECTNAME": {
-        "fieldId": "project",
-        "fetchKey": "name"
+        "fieldId": "project"
     }
 
 }

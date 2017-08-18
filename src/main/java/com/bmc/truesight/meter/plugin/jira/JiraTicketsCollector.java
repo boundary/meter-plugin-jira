@@ -99,7 +99,7 @@ public class JiraTicketsCollector implements Collector {
                 if (isConnectionOpen) {
                     Map<String, List<String>> errorsMap = new HashMap<>();
                     JiraRestClient client = JiraAPI.getJiraRestClient(config.getHostName(), config.getPort(), config.getUserName(), config.getPassword(), config.getProtocalType());
-                    boolean isValid = JiraAPI.isValidCredentials(client, config.getUserName());
+                    boolean isValid = JiraAPI.isValidCredentials(client, config.getUserName(), config.getHostName());
                     if (isValid) {
                         try {
                             Configuration configuration = template.getConfig();
@@ -133,15 +133,14 @@ public class JiraTicketsCollector implements Collector {
                                                 System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + PluginConstants.METER_CHUNK_SIZE + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
                                                 startAt = startAt + (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                                 validRecords += jiraResponse.getValidEventList().size();
-                                                totalJiraRecords+= (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
+                                                totalJiraRecords += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                                 iteration += 1;
                                                 limit += jiraResponse.getInvalidEventList().size();
                                                 limitExceededEventIds.addAll(jiraResponse.getInvalidEventIdsList());
                                                 if (jiraResponse.getInvalidEventList().size() > 0) {
-                                                    System.err.println("following " + config.getRequestType() + " ids are large than allowed limits");
                                                     List<String> eventIds = new ArrayList<>();
                                                     for (TSIEvent event : jiraResponse.getInvalidEventList()) {
-                                                        eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FIELD_ID));
+                                                        eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FIELD_FETCH_KEY));
                                                     }
                                                     System.err.println("following " + config.getRequestType() + " ids are larger than allowed limits [" + String.join(",", eventIds) + "]");
                                                 }
@@ -186,7 +185,7 @@ public class JiraTicketsCollector implements Collector {
                                                 }
                                             }
                                         }
-                                        System.err.println("________________________" + config.getRequestType() + " ingestion to TrueSight Intelligence final status: Total JIRA Records = " + totalJiraRecords + ", Total Valid Records Sent to TSI = " + validRecords + ", Successfully TSI Accepted = " + totalSuccessful + ", larger than allowed limits count  = " + limit + " & Ids = "+limitExceededEventIds+" , TSI Rejected Records = " + totalFailure + " ______");
+                                        System.err.println("________________________" + config.getRequestType() + " ingestion to TrueSight Intelligence final status: Total JIRA Records = " + totalJiraRecords + ", Total Valid Records Sent to TSI = " + validRecords + ", Successfully TSI Accepted = " + totalSuccessful + ", larger than allowed limits count  = " + limit + " & Ids = " + limitExceededEventIds + " , TSI Rejected Records = " + totalFailure + " ______");
                                         if (totalFailure > 0) {
                                             System.err.println("________________________  Errors (No of times seen), [Reference Ids] ______");
                                             errorsMap.keySet().forEach(msg -> {
@@ -206,7 +205,6 @@ public class JiraTicketsCollector implements Collector {
                             eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, ex.getMessage(), Event.EventSeverity.ERROR.toString()));
                         }
                     } else {
-                        System.err.println("Invalid credentials");
                         eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, "Invalid credentials", Event.EventSeverity.ERROR.toString()));
                     }
                 }
