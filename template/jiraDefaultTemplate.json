@@ -1,0 +1,110 @@
+{
+    "config": {
+        "jiraHostName": "<hostName>",
+        "jiraPort": "",
+        "jiraUserName": "<userName>",
+        "jiraPassword": "<password>",
+        "tsiEventEndpoint": "https://api.truesight.bmc.com/v1/events",
+        "tsiApiToken": "<Input TSI Api Token>",
+        "retryConfig": 3,
+        "waitMsBeforeRetry": 5000,
+        "protocalType": "http",
+        "startDateTime": "2005-02-06 00:00",
+        "endDateTime": "2017-08-07 00:00"
+    },
+    "filter": {
+        "status": ["Closed", "Open", "Resolved"],
+        "issueType": [],
+        "priority": []
+    },
+    "eventDefinition": {
+        "title": "@SUMMARY",
+        "fingerprintFields": [
+            "id", "createdAt"
+        ],
+        "severity": "@SEVERITY",
+        "status": "@STATUS",
+        "properties": {
+            "id": "@ID",
+            "key": "@KEY",
+            "Assignee": "@ASSIGNEE",
+            "Priority": "@PRIORITY",
+            "Summary": "@SUMMARY",
+            "IssueType": "@ISSUE_TYPE",
+            "Creator": "@CREATOR",
+            "LastModDate": "@LAST_MOD_DATE",
+            "Duedate": "@DUE_DATE",
+            "Resolution": "@RESOLUTION",
+            "Resolutiondate": "@RESOLUTION_DATE",
+            "Description": "@DESCRIPTION",
+            "LastViewedDate": "@LASTVIEWEDDATE",
+            "ProjectName": "@PROJECTNAME",
+            "app_id": "Jira TSI Integration"
+
+        },
+        "createdAt": "@CREATED_AT",
+        "eventClass": "@ISSUE_TYPE",
+        "source": {
+            "name": "Jira",
+            "type": "Jira",
+            "ref": "Jira"
+        },
+        "sender": {
+            "name": "Jira",
+            "type": "Jira",
+            "ref": "Jira"
+        }
+    },
+    "@ID": {
+        "fieldId": "id"
+    },
+    "@KEY": {
+        "fieldId": "key"
+    },
+    "@SUMMARY": {
+        "fieldId": "summary"
+    },
+    "@ASSIGNEE": {
+        "fieldId": "assignee"
+    },
+    "@CREATED_AT": {
+        "fieldId": "created"
+    },
+    "@CREATOR": {
+        "fieldId": "creator"
+    },
+    "@LAST_MOD_DATE": {
+        "fieldId": "updated"
+    },
+    "@DUE_DATE": {
+        "fieldId": "duedate"
+    },
+    "@ISSUE_TYPE": {
+        "fieldId": "issuetype"
+    },
+    "@RESOLUTION": {
+        "fieldId": "resolution"
+    },
+    "@RESOLUTION_DATE": {
+        "fieldId": "resolutiondate"
+    },
+    "@DESCRIPTION": {
+        "fieldId": "description"
+    },
+    "@LASTVIEWEDDATE": {
+        "fieldId": "lastViewed"
+    },
+    "@SEVERITY": {
+        "fieldId": "urgency"
+    },
+    "@PRIORITY": {
+        "fieldId": "priority"
+    },
+    "@STATUS": {
+        "fieldId": "status"
+    },
+    "@PROJECTNAME": {
+        "fieldId": "project"
+    }
+
+}

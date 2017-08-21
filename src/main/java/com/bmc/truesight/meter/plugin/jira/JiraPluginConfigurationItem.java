@@ -15,7 +15,15 @@ public class JiraPluginConfigurationItem {
     private String requestType;
     private String fields[];
     private String protocalType;
+    private String source;
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
     public String getProtocalType() {
         return protocalType;
     }

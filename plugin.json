@@ -11,17 +11,47 @@
   "postExtract": "",
   "ignore": "",
   "icon": "icon.png",
-  "metrics": [
-  ],
-  "dashboards": [
-  ],
+  "metrics": [],
+  "dashboards": [],
   "paramArray": {
     "itemTitle": [
-      "hostName","requestType"
+      "hostName",
+      "requestType",
+	   "source"
     ],
     "schemaTitle": "Jira Instance"
   },
   "paramSchema": [
+    {
+      "title": "Product",
+      "name": "requestType",
+      "description": "Product",
+      "type": {
+        "enum": [
+          [
+            "Jira Software",
+            "Jira Software"
+          ],
+          [
+            "Jira Core",
+            "Jira Core"
+          ],
+          [
+            "Jira Service Desk",
+            "Jira Service Desk"
+          ]
+        ]
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "title": "Source",
+      "name": "source",
+      "description": "The jira instance name",
+      "type": "string",
+      "required": false
+    },
     {
       "title": "Host Name",
       "name": "hostName",
@@ -53,37 +83,43 @@
       "type": "password",
       "required": true
     },
-	{
-      "title": "Product",
-      "name": "requestType",
-      "description": "Product",
-      "type": { "enum" : [["Jira Software", "Jira Software"], ["Jira Service Desk", "Jira Service Desk"]] },
-      "default": "",
-      "required" : true
-    },
-	{
-      "title": "Protocal Type",
+    {
+      "title": "Protocol Type",
       "name": "protocalType",
-      "description": "Protocal Type",
-      "type": { "enum" : [["HTTP", "http"], ["HTTPS", "https"]] },
-      "required" : true
+      "description": "Protocol Type",
+      "type": {
+        "enum": [
+          [
+            "HTTP",
+            "http"
+          ],
+          [
+            "HTTPS",
+            "https"
+          ]
+        ]
+      },
+      "required": true,
+      "default": "https"
     },
-	{
+    {
       "title": "Field Mapping",
       "name": "fields",
       "description": "Jira TSI Fields Mapping Configuration",
       "type": "array",
       "items": {
-	  "type": "string"
+        "type": "string"
       },
-      "default": [ "{",
+      "default": [
+        "{",
         "\t\"eventDefinition\": {",
         "\t\t\"properties\": {",
         "\t\t\t\"app_id\": \"meter-plugin-jira\"",
         "\t\t}",
         "\t}",
-        "}"],
-      	"required": true
+        "}"
+      ],
+      "required": true
     },
     {
       "title": "Poll Interval (min)",
