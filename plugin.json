@@ -48,7 +48,7 @@
     {
       "title": "Source",
       "name": "source",
-      "description": "The source to display in the legend for the endpoint. Ex. www.google.com",
+      "description": "The jira instance name",
       "type": "string",
       "required": false
     },
