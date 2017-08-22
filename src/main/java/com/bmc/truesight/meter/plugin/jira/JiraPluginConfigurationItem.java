@@ -12,9 +12,25 @@ public class JiraPluginConfigurationItem {
     private String userName;
     private String password;
     private Long pollInterval;
-    private String requestType;
     private String fields[];
-    private String protocalType;
+    private String protocolType;
+    private String app_id;
+
+    public String getApp_id() {
+        return app_id;
+    }
+
+    public void setApp_id(String app_id) {
+        this.app_id = app_id;
+    }
+
+    public String getProtocolType() {
+        return protocolType;
+    }
+
+    public void setProtocolType(String protocolType) {
+        this.protocolType = protocolType;
+    }
     private String source;
 
     public String getSource() {
@@ -23,20 +39,6 @@ public class JiraPluginConfigurationItem {
 
     public void setSource(String source) {
         this.source = source;
-    }
-    public String getProtocalType() {
-        return protocalType;
-    }
-
-    public void setProtocalType(String protocalType) {
-        this.protocalType = protocalType;
-    }
-    public String getRequestType() {
-        return requestType;
-    }
-
-    public void setRequestType(String requestType) {
-        this.requestType = requestType;
     }
 
     public String[] getFields() {
@@ -63,10 +65,10 @@ public class JiraPluginConfigurationItem {
     }
 
     public void setPort(String port) {
-		this.port = port;
-	}
+        this.port = port;
+    }
 
-	public String getUserName() {
+    public String getUserName() {
         return userName;
     }
 
@@ -88,9 +90,7 @@ public class JiraPluginConfigurationItem {
 
     @Override
     public String toString() {
-        return "{hostName=" + hostName + ", port=" + port + ", userName=" + userName
-                + ", password=" + password + ", pollInterval=" + pollInterval + ", requestType=" + requestType
-                + ", fileds=" + Arrays.toString(fields) + "}";
+        return "JiraPluginConfigurationItem{" + "hostName=" + hostName + ", port=" + port + ", userName=" + userName + ", password=" + password + ", pollInterval=" + pollInterval + ", fields=" + fields + ", protocolType=" + protocolType + ", app_id=" + app_id + ", source=" + source + '}';
     }
 
     public void setPollInterval(Long pollInterval) {

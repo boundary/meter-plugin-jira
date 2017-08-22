@@ -33,15 +33,15 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 
 |Field Name        |Description                                                                    |
 |:-----------------|:------------------------------------------------------------------------------|
+|Application Name  |The BMC Application name                                            		   	   |
 |Jira Server Name  |The host of Jira server                                            		   	   |
 |Port              |The port of Jira server                                            		       |
 |Username          |The user of Jira server                                            		       |
 |Password          |The password of Jira server                                        		       |
 |Poll Interval     |How often (in minutes) to poll for collecting the tickets                      |
-|Ticket Type       |Type of tickets to be collected(Jira Software or Jira Service desk)            |
 |Field Mapping     |Type of fields will be collected(more info please check in template section)   |
-|protocalType      | 																			   |
-|requestType	   |																			   | 
+|protocolType      |Type of protocals(https or http) 											   |
+|Source	           |The jira instance name														   | 
 
 
 
@@ -50,5 +50,5 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 
 
 ### References
-[Jira Plugin Documentation](https://docs.bmc.com/docs/display/bti10/Remedy+Plugin)
+[Jira Plugin Documentation](https://docs.bmc.com/docs/display/bti10/jira+Plugin)
 

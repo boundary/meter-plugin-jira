@@ -8,10 +8,11 @@
         "tsiApiToken": "<Input TSI Api Token>",
         "retryConfig": 3,
         "waitMsBeforeRetry": 5000,
-        "protocalType": "http",
+        "protocolType": "http",
         "startDateTime": "2005-02-06 00:00",
         "endDateTime": "2017-08-07 00:00"
     },
+	"jqlQuery":"",
     "filter": {
         "status": ["Closed", "Open", "Resolved"],
         "issueType": [],
@@ -20,29 +21,29 @@
     "eventDefinition": {
         "title": "@SUMMARY",
         "fingerprintFields": [
-            "id", "createdAt"
+            "key"
         ],
         "severity": "@SEVERITY",
         "status": "@STATUS",
         "properties": {
-            "id": "@ID",
             "key": "@KEY",
             "Assignee": "@ASSIGNEE",
             "Priority": "@PRIORITY",
             "Summary": "@SUMMARY",
             "IssueType": "@ISSUE_TYPE",
             "Creator": "@CREATOR",
-            "LastModDate": "@LAST_MOD_DATE",
+            "LastModifiedDate": "@LAST_MOD_DATE",
             "Duedate": "@DUE_DATE",
             "Resolution": "@RESOLUTION",
             "Resolutiondate": "@RESOLUTION_DATE",
             "Description": "@DESCRIPTION",
             "LastViewedDate": "@LASTVIEWEDDATE",
             "ProjectName": "@PROJECTNAME",
+			"IssueCreatedDate":"@CREATED_AT",
             "app_id": "Jira TSI Integration"
 
         },
-        "createdAt": "@CREATED_AT",
+		"createdAt": "@CREATED_AT",
         "eventClass": "@ISSUE_TYPE",
         "source": {
             "name": "Jira",
@@ -54,9 +55,6 @@
             "type": "Jira",
             "ref": "Jira"
         }
-    },
-    "@ID": {
-        "fieldId": "id"
     },
     "@KEY": {
         "fieldId": "key"
@@ -95,7 +93,7 @@
         "fieldId": "lastViewed"
     },
     "@SEVERITY": {
-        "fieldId": "urgency"
+        "fieldId": "priority"
     },
     "@PRIORITY": {
         "fieldId": "priority"

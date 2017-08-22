@@ -23,27 +23,11 @@
   },
   "paramSchema": [
     {
-      "title": "Product",
-      "name": "requestType",
-      "description": "Product",
-      "type": {
-        "enum": [
-          [
-            "Jira Software",
-            "Jira Software"
-          ],
-          [
-            "Jira Core",
-            "Jira Core"
-          ],
-          [
-            "Jira Service Desk",
-            "Jira Service Desk"
-          ]
-        ]
-      },
-      "default": "",
-      "required": true
+      "title": "Aplication Name",
+      "name": "app_id",
+      "description": "The Aplication Name",
+      "type": "string",
+      "required": false
     },
     {
       "title": "Source",
@@ -85,7 +69,7 @@
     },
     {
       "title": "Protocol Type",
-      "name": "protocalType",
+      "name": "protocolType",
       "description": "Protocol Type",
       "type": {
         "enum": [

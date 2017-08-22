@@ -11,6 +11,8 @@ import com.bmc.truesight.saas.jira.impl.GenericTemplatePreParser;
 import com.bmc.truesight.saas.jira.in.TemplateParser;
 import com.bmc.truesight.saas.jira.in.TemplatePreParser;
 import com.bmc.truesight.saas.jira.in.TemplateValidator;
+import com.bmc.truesight.saas.jira.util.Constants;
+import com.bmc.truesight.saas.jira.util.StringUtil;
 import com.boundary.plugin.sdk.CollectorDispatcher;
 import com.boundary.plugin.sdk.Event;
 import com.boundary.plugin.sdk.EventSink;
@@ -24,7 +26,6 @@ import com.google.gson.JsonParseException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +85,6 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
 
     @Override
     public void run() {
-
         ArrayList<JiraPluginConfigurationItem> items = configuration.getItems();
         int counter = 0;
         if (items != null && items.size() > 0) {
@@ -96,7 +96,7 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                 Template template = null;
                 try {
                     Template defaultTemplate = new Template();
-                    defaultTemplate = templatePreParser.loadDefaults(PluginConstants.JIRA_TEMPLATE_PATH);
+                    defaultTemplate = templatePreParser.loadDefaults();
                     template = templateParser.readParseConfigJson(defaultTemplate, Utils.getFieldValues(config.getFields()));
                     isTemplateParsingSuccessful = true;
                 } catch (ParsingException ex) {
@@ -107,6 +107,11 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                 if (isTemplateParsingSuccessful) {
                     TemplateValidator templateValidator = new JiraTemplateValidator();
                     try {
+                        if (config.getApp_id() == null) {
+                        } else if (StringUtil.isValidValue(config.getApp_id())) {
+                        } else {
+                            throw new ValidationException(StringUtil.format(Constants.APPLICATION_NAME_INVALID, new Object[]{config.getApp_id().trim()}));
+                        }
                         templateValidator.validate(template);
                         isTemplateValidationSuccessful = true;
                     } catch (ValidationException ex) {
@@ -114,21 +119,20 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                     } catch (Exception ex) {
                         System.err.println("Validation failed - " + ex.getMessage());
                     }
+                } else {
+                    System.exit(1);
                 }
                 if (isTemplateValidationSuccessful) {
                     try {
                         dispatcher.addCollector(new JiraTicketsCollector(config, template));
                     } catch (ParsingException ex) {
-                        java.util.logging.Logger.getLogger(JiraPlugin.class.getName()).log(Level.SEVERE, null, ex);
+                        System.err.println("Parsing failed -" + ex.getMessage());
                     }
-                    counter += 1;
+                } else {
+                    System.exit(1);
                 }
             }
-            if (counter != 0) {
-                dispatcher.run();
-            } else {
-                System.exit(1);
-            }
+            dispatcher.run();
         }
     }
 }

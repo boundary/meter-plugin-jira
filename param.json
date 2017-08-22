@@ -3,24 +3,20 @@
     {
       "hostName":"<hostName>",
       "port":"",
+	  "source":"<Source>",
       "userName":"<userName>",
       "password":"<password>",
-	  "protocalType":"https",
-      "requestType":"Jira Software",
-      "fields":["{
-	\"filter\": {
-		\"status\": [
-			\"Closed\"
-		]
-	},
+	  "protocolType":"https",
+      "app_id":"meter-plugin-jira",
+      "fields":[""{
 	\"eventDefinition\": {
 		\"properties\": {
-			\"app_id\": \"jira-integration\"
+			\"app_id\": \"meter-plugin-jira\"
 		}
 	}
-} "
+"
       ],
-      "pollInterval":2102400
+      "pollInterval":15
     }
   ]
 }
