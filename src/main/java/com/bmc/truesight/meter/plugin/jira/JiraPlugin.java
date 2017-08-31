@@ -4,6 +4,7 @@ import com.bmc.truesight.meter.plugin.jira.util.PluginConstants;
 import com.bmc.truesight.meter.plugin.jira.util.JiraTemplateValidator;
 import com.bmc.truesight.meter.plugin.jira.util.Utils;
 import com.bmc.truesight.saas.jira.beans.Template;
+import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.exception.ValidationException;
 import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
@@ -11,8 +12,6 @@ import com.bmc.truesight.saas.jira.impl.GenericTemplatePreParser;
 import com.bmc.truesight.saas.jira.in.TemplateParser;
 import com.bmc.truesight.saas.jira.in.TemplatePreParser;
 import com.bmc.truesight.saas.jira.in.TemplateValidator;
-import com.bmc.truesight.saas.jira.util.Constants;
-import com.bmc.truesight.saas.jira.util.StringUtil;
 import com.boundary.plugin.sdk.CollectorDispatcher;
 import com.boundary.plugin.sdk.Event;
 import com.boundary.plugin.sdk.EventSink;
@@ -107,11 +106,11 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                 if (isTemplateParsingSuccessful) {
                     TemplateValidator templateValidator = new JiraTemplateValidator();
                     try {
-                        if (config.getApp_id() == null) {
-                        } else if (StringUtil.isValidValue(config.getApp_id())) {
-                        } else {
-                            throw new ValidationException(StringUtil.format(Constants.APPLICATION_NAME_INVALID, new Object[]{config.getApp_id().trim()}));
-                        }
+                        template.getConfig().setJiraHostName(config.getHostName());
+                        template.getConfig().setJiraPort(config.getPort());
+                        template.getConfig().setProtocolType(config.getProtocolType());
+                        template.getConfig().setJiraUserName(config.getUserName());
+                        template.getConfig().setJiraPassword(config.getPassword());
                         templateValidator.validate(template);
                         isTemplateValidationSuccessful = true;
                     } catch (ValidationException ex) {
@@ -127,7 +126,10 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                         dispatcher.addCollector(new JiraTicketsCollector(config, template));
                     } catch (ParsingException ex) {
                         System.err.println("Parsing failed -" + ex.getMessage());
+                    } catch (JiraApiInstantiationFailedException ex) {
+                        System.err.println("Jira Api instantiation failed exception -" + ex.getMessage());
                     }
+
                 } else {
                     System.exit(1);
                 }

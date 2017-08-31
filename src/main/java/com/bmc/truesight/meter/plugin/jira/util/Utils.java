@@ -14,6 +14,7 @@ import com.bmc.truesight.meter.plugin.jira.JiraPluginConfigurationItem;
 import com.bmc.truesight.saas.jira.beans.Configuration;
 import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
+import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
 import com.bmc.truesight.saas.jira.util.Constants;
@@ -95,7 +96,7 @@ public class Utils {
         return event;
     }
 
-    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException {
+    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException, JiraApiInstantiationFailedException {
         Configuration configuration = template.getConfig();
         configuration.setJiraHostName(config.getHostName());
         GenericTemplateParser parser = new GenericTemplateParser();
@@ -128,7 +129,7 @@ public class Utils {
             event.setProperties(defPropertyMap);
             template.setEventDefinition(event);
         }
-        template = parser.ignoreFields(template, config.getHostName(), config.getUserName(), config.getPassword(), config.getPort(), config.getProtocolType());
+        template = parser.ignoreFields(template);
         return template;
     }
 
@@ -156,7 +157,7 @@ public class Utils {
         ZonedDateTime serverDateTime = utcTime
                 .withZoneSameInstant(ZoneId.of(serverTimezone));
 
-        return  DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
+        return DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
                 .format(serverDateTime);
 
     }
