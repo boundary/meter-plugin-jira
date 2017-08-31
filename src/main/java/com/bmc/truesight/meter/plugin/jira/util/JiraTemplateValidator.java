@@ -26,7 +26,6 @@ public class JiraTemplateValidator implements TemplateValidator {
         /*if (template.getFilter().isEmpty()) {
             throw new ValidationException(StringUtil.format(Constants.CONFIG_VALIDATION_FAILED, new Object[]{}));
         }*/
-       
         // validate payload configuration
         if (payload.getTitle() != null && payload.getTitle().startsWith("@") && !fieldItemMap.containsKey(payload.getTitle())) {
             throw new ValidationException(StringUtil.format(Constants.PAYLOAD_PLACEHOLDER_DEFINITION_MISSING,
@@ -49,6 +48,17 @@ public class JiraTemplateValidator implements TemplateValidator {
             }
             if (properties.get(key).startsWith("@") && !fieldItemMap.containsKey(properties.get(key))) {
                 throw new ValidationException(StringUtil.format(Constants.PAYLOAD_PLACEHOLDER_DEFINITION_MISSING, new Object[]{properties.get(key)}));
+            }
+            //Validate Application Name
+            if (key.equalsIgnoreCase(Constants.APPLICATION_ID)) {
+                if (StringUtil.isValidValue(properties.get(key))) {
+                } else {
+                    throw new ValidationException(StringUtil.format(Constants.APPLICATION_NAME_INVALID, new Object[]{key.trim()}));
+                }
+                if (StringUtil.isValidApplicationIdlength(properties.get(key))) {
+                } else {
+                    throw new ValidationException(StringUtil.format(Constants.APPLICATION_LENGTH_MEG, new Object[]{key.trim()}));
+                }
             }
         }
 

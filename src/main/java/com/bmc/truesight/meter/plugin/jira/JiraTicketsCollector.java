@@ -16,6 +16,7 @@ import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.integration.adapter.JiraEntryEventAdapter;
+import com.bmc.truesight.saas.jira.util.CachedDateTime;
 import com.bmc.truesight.saas.jira.util.Constants;
 import com.bmc.truesight.saas.jira.util.Util;
 import com.bmc.truesight.saas.jira.util.searchQueryBuilder;
@@ -29,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.sql.Array;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import org.joda.time.DateTime;
 
 /**
  *
@@ -64,6 +66,7 @@ public class JiraTicketsCollector implements Collector {
 
     @Override
     public void run() {
+        String serverInfoUrl = Util.getURL(config.getHostName(), config.getPort(), config.getUserName(), config.getPassword(), config.getProtocolType()) + Constants.JIRA_SERVERINFO_API;
         while (true) {
             EventSinkAPI eventSinkAPI = new EventSinkAPI();
             EventSinkStandardOutput eventSinkAPIstd = new EventSinkStandardOutput();
@@ -81,14 +84,12 @@ public class JiraTicketsCollector implements Collector {
             boolean isFound = false;
             int limit = 0;
             long totalJiraRecords = 0;
+            Long currentMili = Calendar.getInstance().getTimeInMillis();
+            Long pastMili = currentMili - (config.getPollInterval() * 60 * 1000);
             List<String> limitExceededEventIds = new ArrayList<>();
+            template.getConfig().setStartDateTime(new Date(pastMili));
+            template.getConfig().setEndDateTime(new Date(currentMili));
             try {
-                Date endDate = new Date();
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(endDate);
-                cal.add(Calendar.MINUTE, (int) -config.getPollInterval());
-                Date startDate = cal.getTime();
-                System.err.println("Starting event reading & ingestion to tsi for (DateTime:" + Util.JiraformatedDateAndTime(startDate) + " to DateTime:" + Util.JiraformatedDateAndTime(endDate) + ")");
                 isConnectionOpen = eventSinkAPI.openConnection();
                 if (isConnectionOpen) {
                     System.err.println("JSON RPC Socket connection successful");
@@ -98,15 +99,22 @@ public class JiraTicketsCollector implements Collector {
                 }
                 if (isConnectionOpen) {
                     Map<String, List<String>> errorsMap = new HashMap<>();
-                    JiraRestClient client = JiraAPI.getJiraRestClient(config.getHostName(), config.getPort(), config.getUserName(), config.getPassword(), config.getProtocalType());
+                    JiraRestClient client = JiraAPI.getJiraRestClient(config.getHostName(), config.getPort(), config.getUserName(), config.getPassword(), config.getProtocolType());
                     boolean isValid = JiraAPI.isValidCredentials(client, config.getUserName(), config.getHostName());
                     if (isValid) {
+                        String serverTimezone = JiraAPI.getServerTimeZone(serverInfoUrl, Util.getAuthCode(template.getConfig().getJiraUserName(), template.getConfig().getJiraPassword()), template.getConfig());
+                        System.err.println("Starting event reading & ingestion to tsi for (DateTime:" + Utils.dateToString(template.getConfig().getStartDateTime()) + " to DateTime:" + Utils.dateToString(template.getConfig().getEndDateTime()) + ")");
                         try {
                             Configuration configuration = template.getConfig();
-                            String searchQuery = searchQueryBuilder.buildJQLQuery(template.getFilter(), Util.JiraformatedDateAndTime(startDate), Util.JiraformatedDateAndTime(endDate));
+                            String searchQuery = null;
+                            if (template.getJqlQuery() == null || template.getJqlQuery().isEmpty()) {
+                                searchQuery = searchQueryBuilder.buildJQLQuery(template.getFilter(), Utils.getJQLTimeFormat(pastMili, serverTimezone), Utils.getJQLTimeFormat(currentMili, serverTimezone), null);
+                            } else {
+                                searchQuery = searchQueryBuilder.buildJQLQuery(template.getFilter(), Utils.getJQLTimeFormat(pastMili, serverTimezone), Utils.getJQLTimeFormat(currentMili, serverTimezone), template.getJqlQuery());
+                            }
                             try {
                                 String finalSearchUrl = Util.jqlBuilder(Util.getURL(config.getHostName(),
-                                        config.getPort(), config.getUserName(), config.getPassword(), config.getProtocalType()), 0, startAt, searchQuery, Constants.JIRA_NONE_FIELD);
+                                        config.getPort(), config.getUserName(), config.getPassword(), config.getProtocolType()), 0, startAt, searchQuery, Constants.JIRA_NONE_FIELD);
                                 JsonNode responseNode = JiraAPI.search(finalSearchUrl, Util.getAuthCode(config.getUserName(), config.getPassword()), configuration);
                                 if (!responseNode.isNull()) {
                                     try {
@@ -120,14 +128,14 @@ public class JiraTicketsCollector implements Collector {
                                 if (isFound) {
                                     if (totalTickets != 0) {
                                         for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
-                                            System.err.println("Iteration Satrted {} " + iteration);
+                                            System.err.println("Iteration Started {} " + iteration);
                                             String searchUrl = Util.jqlBuilder(Util.getURL(config.getHostName(),
-                                                    config.getPort(), config.getUserName(), config.getPassword(), config.getProtocalType()), PluginConstants.METER_CHUNK_SIZE, startAt, searchQuery, "");
+                                                    config.getPort(), config.getUserName(), config.getPassword(), config.getProtocolType()), PluginConstants.METER_CHUNK_SIZE, startAt, searchQuery, "");
                                             JsonNode response = JiraAPI.search(searchUrl, Util.getAuthCode(config.getUserName(), config.getPassword()), configuration);
                                             if (!response.isNull()) {
                                                 JsonNode responseFiledsNode = response.get(Constants.JSON_ISSUES_NODE);
                                                 if (!responseFiledsNode.isNull()) {
-                                                    jiraResponse = adapter.eventList(responseFiledsNode, template, config.getRequestType());
+                                                    jiraResponse = adapter.eventList(responseFiledsNode, template);
                                                 }
                                                 totalRecordsRead += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                                 System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + PluginConstants.METER_CHUNK_SIZE + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
@@ -142,7 +150,7 @@ public class JiraTicketsCollector implements Collector {
                                                     for (TSIEvent event : jiraResponse.getInvalidEventList()) {
                                                         eventIds.add(event.getProperties().get(com.bmc.truesight.saas.jira.util.Constants.FIELD_FETCH_KEY));
                                                     }
-                                                    System.err.println("following " + config.getRequestType() + " ids are larger than allowed limits [" + String.join(",", eventIds) + "]");
+                                                    System.err.println("following ids are larger than allowed limits [" + String.join(",", eventIds) + "]");
                                                 }
                                                 List<TSIEvent> eventsList = jiraResponse.getValidEventList();
                                                 if (eventsList.size() > 0) {
@@ -180,12 +188,10 @@ public class JiraTicketsCollector implements Collector {
                                                             }
                                                         }
                                                     }
-                                                } else {
-                                                    System.err.println(eventsList.size() + " Events found for the interval, DateTime:" + Utils.dateToString(template.getConfig().getStartDateTime()) + " to DateTime:" + Utils.dateToString(template.getConfig().getEndDateTime()));
                                                 }
                                             }
                                         }
-                                        System.err.println("________________________" + config.getRequestType() + " ingestion to TrueSight Intelligence final status: Total JIRA Records = " + totalJiraRecords + ", Total Valid Records Sent to TSI = " + validRecords + ", Successfully TSI Accepted = " + totalSuccessful + ", larger than allowed limits count  = " + limit + " & Ids = " + limitExceededEventIds + " , TSI Rejected Records = " + totalFailure + " ______");
+                                        System.err.println("________________________" + "" + " ingestion to TrueSight Intelligence final status: Total JIRA Records = " + totalJiraRecords + ", Total Valid Records Sent to TSI = " + validRecords + ", Successfully TSI Accepted = " + totalSuccessful + ", larger than allowed limits count  = " + limit + " & Ids = " + limitExceededEventIds + " , TSI Rejected Records = " + totalFailure + " ______");
                                         if (totalFailure > 0) {
                                             System.err.println("________________________  Errors (No of times seen), [Reference Ids] ______");
                                             errorsMap.keySet().forEach(msg -> {
@@ -209,9 +215,11 @@ public class JiraTicketsCollector implements Collector {
                     }
                 }
 
-            } catch (ParseException | IOException ex) {
+            } catch (IOException ex) {
                 System.err.println("Interrupted Exception :" + ex.getMessage());
                 eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, ex.getMessage(), Event.EventSeverity.ERROR.toString()));
+            } catch (ParsingException ex) {
+                java.util.logging.Logger.getLogger(JiraTicketsCollector.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
                 if (isConnectionOpen) {
                     boolean isConnectionClosed = eventSinkAPI.closeConnection();

@@ -12,24 +12,23 @@ import org.slf4j.LoggerFactory;
 
 import com.bmc.truesight.meter.plugin.jira.JiraPluginConfigurationItem;
 import com.bmc.truesight.saas.jira.beans.Configuration;
-import com.bmc.truesight.saas.jira.beans.FieldItem;
 import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
-import com.bmc.truesight.saas.jira.util.StringUtil;
-import com.bmc.truesight.saas.jira.util.Util;
+import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
+import com.bmc.truesight.saas.jira.util.Constants;
 import com.boundary.plugin.sdk.Event;
 import com.boundary.plugin.sdk.EventSinkStandardOutput;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import org.apache.commons.codec.binary.Base64;
 
 /**
@@ -41,6 +40,7 @@ public class Utils {
 
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    static String JQL_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm";
 
     public static String dateToString(Date date) {
         DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -95,104 +95,40 @@ public class Utils {
         return event;
     }
 
-    /*public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException {
+    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException {
         Configuration configuration = template.getConfig();
         configuration.setJiraHostName(config.getHostName());
+        GenericTemplateParser parser = new GenericTemplateParser();
         if (config.getPort() != null && !config.getPort().trim().isEmpty()) {
             try {
-                Integer port = Integer.parseInt(config.getPort());
-                configuration.setJiraPort(port);
+                configuration.setJiraPort(config.getPort());
             } catch (NumberFormatException ex) {
-                System.err.println("Port (" + config.getPort() + ") is not a valid port, using default port.");
-            }
-        }
-        configuration.setJiraUserName(config.getUserName());
-        configuration.setJiraPassword(config.getPassword());
-        JsonNode fieldNode = convertTOJsont(config.getFields());
-        ObjectMapper mapper = new ObjectMapper();
-
-        if (!fieldNode.isNull()) {
-            JsonNode filterConfiguration = fieldNode.get(com.bmc.truesight.saas.jira.util.Constants.CONFIG_FILTER_NODE);
-            if (filterConfiguration != null) {
-                ObjectReader obReader = mapper.reader(new TypeReference<List<String>>() {
-                });
-                try {
-                    JsonNode condFields = filterConfiguration.get(com.bmc.truesight.saas.jira.util.Constants.CONFIG_ISSUES_TYPE_CONDFIELDS_NODE_NAME);
-                    if (condFields != null) {
-                        List<String> condList = null;
-                        condList = obReader.readValue(condFields);
-                        configuration.setIssueTypeConditionFields(condList);
-                    }
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
-
-                }
-                try {
-                    JsonNode statusFields = filterConfiguration.get(com.bmc.truesight.saas.jira.util.Constants.CONFIG_CONDSTATUSFIELDS_NODE_NAME);
-                    if (statusFields != null) {
-                        List<String> condList = null;
-                        condList = obReader.readValue(statusFields);
-                        configuration.setStatusConditionFields(condList);
-                    }
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
-
-                }
-                try {
-                    JsonNode priorityFields = filterConfiguration.get(com.bmc.truesight.saas.jira.util.Constants.CONFIG_PRIORITY_CONDITION_FIELDS);
-                    List<String> condList = null;
-                    if (priorityFields != null) {
-                        condList = obReader.readValue(priorityFields);
-                    }
-                    configuration.setPriorityConditionFields(condList);
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            // Read the payload details and map to pojo
-            try {
-                JsonNode payloadNode = fieldNode.get(com.bmc.truesight.saas.jira.util.Constants.EVENTDEF_NODE_NAME);
-                String payloadString = mapper.writeValueAsString(payloadNode);
-                TSIEvent event = mapper.readValue(payloadString, TSIEvent.class);
-                template.setEventDefinition(event);
-            } catch (IOException e) {
-                throw new ParsingException(StringUtil.format(com.bmc.truesight.saas.jira.util.Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));
-            }
-
-            // Iterate over the properties and if it starts with '@', put it to
-            // itemValueMap
-            Iterator<Map.Entry<String, JsonNode>> nodes = fieldNode.fields();
-            Map<String, FieldItem> fieldItemMap = new HashMap<>();
-            while (nodes.hasNext()) {
-                Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
-                if (entry.getKey().startsWith(com.bmc.truesight.saas.jira.util.Constants.PLACEHOLDER_START_TOKEN)) {
-                    try {
-                        String placeholderNode = mapper.writeValueAsString(entry.getValue());
-                        FieldItem placeholderDefinition = mapper.readValue(placeholderNode, FieldItem.class);
-                        fieldItemMap.put(entry.getKey(), placeholderDefinition);
-                    } catch (IOException e) {
-                        throw new ParsingException(StringUtil.format(com.bmc.truesight.saas.jira.util.Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{entry.getKey()}));
-                    }
-                }
-            }
-            template.setFieldItemMap(fieldItemMap);
-        }
-        return template;
-    }*/
-    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) {
-        Configuration configuration = template.getConfig();
-        configuration.setJiraHostName(config.getHostName());
-        if (config.getPort() != null && !config.getPort().trim().isEmpty()) {
-            try {
-                Integer port = Integer.parseInt(config.getPort());
-                configuration.setJiraPort(port);
-            } catch (NumberFormatException ex) {
-                System.err.println("Port (" + config.getPort() + ") is not a valid port, using default port.");
+                LOG.error("Port (" + config.getPort() + ") is not a valid port, using default port.");
             }
         }
         configuration.setJiraUserName(config.getUserName());
         configuration.setJiraPassword(config.getPassword());
         template.setConfig(configuration);
+        if (config.getApp_id() == null) {
+
+        } else if (template.getEventDefinition().getProperties() != null && template.getEventDefinition().getProperties().size() > 0) {
+            Map<String, String> defPropertyMap = template.getEventDefinition().getProperties();
+            TSIEvent event = template.getEventDefinition();
+            Map<String, String> propertyMap = template.getEventDefinition().getProperties();
+            template.getEventDefinition().getProperties().keySet().forEach(key -> {
+                if (Constants.APPLICATION_ID.equalsIgnoreCase(key)) {
+                    if (config.getApp_id() == null) {
+                        defPropertyMap.put(key, propertyMap.get(key));
+                    }
+                    defPropertyMap.put(key, config.getApp_id());
+                } else {
+                    defPropertyMap.put(key, propertyMap.get(key));
+                }
+            });
+            event.setProperties(defPropertyMap);
+            template.setEventDefinition(event);
+        }
+        template = parser.ignoreFields(template, config.getHostName(), config.getUserName(), config.getPassword(), config.getPort(), config.getProtocolType());
         return template;
     }
 
@@ -206,9 +142,22 @@ public class Utils {
         try {
             fieldNode = objectMapper.readTree(filedJson.toString());
         } catch (IOException ex) {
-            System.err.println("Exception occured while parsing json String {}" + ex.getMessage());
+            LOG.error("Exception occured while parsing json String {}" + ex.getMessage());
 
         }
         return fieldNode;
+    }
+
+    public static String getJQLTimeFormat(long timestamp, String serverTimezone) {
+
+        ZonedDateTime utcTime = ZonedDateTime
+                .ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.UTC);
+
+        ZonedDateTime serverDateTime = utcTime
+                .withZoneSameInstant(ZoneId.of(serverTimezone));
+
+        return  DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
+                .format(serverDateTime);
+
     }
 }
