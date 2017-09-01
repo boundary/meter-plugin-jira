@@ -23,9 +23,9 @@
   },
   "paramSchema": [
     {
-      "title": "Aplication Name",
+      "title": "Application Name",
       "name": "app_id",
-      "description": "The Aplication Name",
+      "description": "The Application Name",
       "type": "string",
       "required": false
     },

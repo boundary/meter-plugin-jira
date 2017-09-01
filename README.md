@@ -1,7 +1,7 @@
 TrueSight Pulse Jira Integration Plugin
 =========================================
 
-Collects tickets(Jira Software and Jiar Service desk) from jira servers and collected tickets are sent to Truesight Intelligence as Events. 
+Collects tickets(Jira Core, Jira Software and Jiar Service desk) from jira servers and collected tickets are sent to Truesight Intelligence as Events. 
 The plugin allows multiple Jira instances data to be collected with independent polling interval.
 
 ### Prerequisites
@@ -33,7 +33,7 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 
 |Field Name        |Description                                                                    |
 |:-----------------|:------------------------------------------------------------------------------|
-|Application Name  |The BMC Application name                                            		   	   |
+|Application Name  |The TrueSight Intelligence App using which the events will be tagged. If the App does not exist, a new App is created                                            		   	   									 |
 |Jira Server Name  |The host of Jira server                                            		   	   |
 |Port              |The port of Jira server                                            		       |
 |Username          |The user of Jira server                                            		       |
