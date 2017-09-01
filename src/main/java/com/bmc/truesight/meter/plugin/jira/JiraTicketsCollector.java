@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  *
@@ -62,7 +63,12 @@ public class JiraTicketsCollector implements Collector {
     @Override
     public void run() {
         while (true) {
-            JiraReader jiraReader = new JiraReader();
+            JiraReader jiraReader = null;
+            try {
+                jiraReader = new JiraReader(template);
+            } catch (JiraApiInstantiationFailedException ex) {
+                java.util.logging.Logger.getLogger(JiraTicketsCollector.class.getName()).log(Level.SEVERE, null, ex);
+            }
             EventSinkAPI eventSinkAPI = new EventSinkAPI();
             EventSinkStandardOutput eventSinkAPIstd = new EventSinkStandardOutput();
             System.err.println("{} validation is successful!");
@@ -96,7 +102,7 @@ public class JiraTicketsCollector implements Collector {
                     Map<String, List<String>> errorsMap = new HashMap<>();
                     boolean isValid = false;
                     try {
-                        isValid = jiraReader.validateCredentials(template.getConfig());
+                        isValid = jiraReader.validateCredentials();
                     } catch (JiraLoginFailedException ex) {
                         LOG.error("Jira login faild exception {} " + ex.getMessage());
                     } catch (JiraApiInstantiationFailedException ex) {
@@ -105,7 +111,7 @@ public class JiraTicketsCollector implements Collector {
                     if (isValid) {
                         System.err.println("Starting event reading & ingestion to tsi for (DateTime:" + Utils.dateToString(template.getConfig().getStartDateTime()) + " to DateTime:" + Utils.dateToString(template.getConfig().getEndDateTime()) + ")");
                         try {
-                            totalTickets = jiraReader.getAvailableRecordsCount(template);
+                            totalTickets = jiraReader.getAvailableRecordsCount();
                         } catch (JiraReadFailedException ex) {
                             LOG.error("Exception occured while getting total tickets count {} " + ex.getMessage());
                         } catch (ParseException ex) {
@@ -117,7 +123,7 @@ public class JiraTicketsCollector implements Collector {
                             for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
                                 System.err.println("Iteration Started {} " + iteration);
                                 try {
-                                    jiraResponse = jiraReader.readJiraTickets(template, startAt, PluginConstants.METER_CHUNK_SIZE, adapter);
+                                    jiraResponse = jiraReader.readJiraTickets(startAt, PluginConstants.METER_CHUNK_SIZE, adapter);
                                 } catch (JiraReadFailedException ex) {
                                     LOG.error("Exception occured while reading jira tickets {} " + ex.getMessage());
                                 } catch (JiraApiInstantiationFailedException ex) {
@@ -161,7 +167,7 @@ public class JiraTicketsCollector implements Collector {
                                             for (com.bmc.truesight.saas.jira.beans.Error error : result.getErrors()) {
                                                 String id = "";
                                                 String msg = error.getMessage().trim();
-                                                id = eventsList.get(error.getIndex()).getProperties().get(Constants.FIELD_ID);
+                                                id = eventsList.get(error.getIndex()).getProperties().get(Constants.FIELD_FETCH_KEY);
                                                 if (errorsMap.containsKey(msg)) {
                                                     List<String> errorsId = errorsMap.get(msg);
                                                     errorsId.add(id);

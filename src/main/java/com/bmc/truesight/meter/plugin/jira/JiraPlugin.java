@@ -106,11 +106,6 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                 if (isTemplateParsingSuccessful) {
                     TemplateValidator templateValidator = new JiraTemplateValidator();
                     try {
-                        template.getConfig().setJiraHostName(config.getHostName());
-                        template.getConfig().setJiraPort(config.getPort());
-                        template.getConfig().setProtocolType(config.getProtocolType());
-                        template.getConfig().setJiraUserName(config.getUserName());
-                        template.getConfig().setJiraPassword(config.getPassword());
                         templateValidator.validate(template);
                         isTemplateValidationSuccessful = true;
                     } catch (ValidationException ex) {

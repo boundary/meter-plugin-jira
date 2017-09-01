@@ -109,18 +109,14 @@ public class Utils {
         }
         configuration.setJiraUserName(config.getUserName());
         configuration.setJiraPassword(config.getPassword());
+        configuration.setProtocolType(config.getProtocolType());
         template.setConfig(configuration);
-        if (config.getApp_id() == null) {
-
-        } else if (template.getEventDefinition().getProperties() != null && template.getEventDefinition().getProperties().size() > 0) {
+        if (!config.getApp_id().isEmpty() && config.getApp_id() != null && template.getEventDefinition().getProperties() != null && template.getEventDefinition().getProperties().size() > 0) {
             Map<String, String> defPropertyMap = template.getEventDefinition().getProperties();
             TSIEvent event = template.getEventDefinition();
             Map<String, String> propertyMap = template.getEventDefinition().getProperties();
             template.getEventDefinition().getProperties().keySet().forEach(key -> {
                 if (Constants.APPLICATION_ID.equalsIgnoreCase(key)) {
-                    if (config.getApp_id() == null) {
-                        defPropertyMap.put(key, propertyMap.get(key));
-                    }
                     defPropertyMap.put(key, config.getApp_id());
                 } else {
                     defPropertyMap.put(key, propertyMap.get(key));
