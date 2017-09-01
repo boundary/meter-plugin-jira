@@ -14,6 +14,7 @@ import com.bmc.truesight.meter.plugin.jira.JiraPluginConfigurationItem;
 import com.bmc.truesight.saas.jira.beans.Configuration;
 import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
+import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
 import com.bmc.truesight.saas.jira.util.Constants;
@@ -95,7 +96,7 @@ public class Utils {
         return event;
     }
 
-    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException {
+    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException, JiraApiInstantiationFailedException {
         Configuration configuration = template.getConfig();
         configuration.setJiraHostName(config.getHostName());
         GenericTemplateParser parser = new GenericTemplateParser();
@@ -108,18 +109,14 @@ public class Utils {
         }
         configuration.setJiraUserName(config.getUserName());
         configuration.setJiraPassword(config.getPassword());
+        configuration.setProtocolType(config.getProtocolType());
         template.setConfig(configuration);
-        if (config.getApp_id() == null) {
-
-        } else if (template.getEventDefinition().getProperties() != null && template.getEventDefinition().getProperties().size() > 0) {
+        if (!config.getApp_id().isEmpty() && config.getApp_id() != null && template.getEventDefinition().getProperties() != null && template.getEventDefinition().getProperties().size() > 0) {
             Map<String, String> defPropertyMap = template.getEventDefinition().getProperties();
             TSIEvent event = template.getEventDefinition();
             Map<String, String> propertyMap = template.getEventDefinition().getProperties();
             template.getEventDefinition().getProperties().keySet().forEach(key -> {
                 if (Constants.APPLICATION_ID.equalsIgnoreCase(key)) {
-                    if (config.getApp_id() == null) {
-                        defPropertyMap.put(key, propertyMap.get(key));
-                    }
                     defPropertyMap.put(key, config.getApp_id());
                 } else {
                     defPropertyMap.put(key, propertyMap.get(key));
@@ -128,7 +125,7 @@ public class Utils {
             event.setProperties(defPropertyMap);
             template.setEventDefinition(event);
         }
-        template = parser.ignoreFields(template, config.getHostName(), config.getUserName(), config.getPassword(), config.getPort(), config.getProtocolType());
+        template = parser.ignoreFields(template);
         return template;
     }
 
@@ -156,7 +153,7 @@ public class Utils {
         ZonedDateTime serverDateTime = utcTime
                 .withZoneSameInstant(ZoneId.of(serverTimezone));
 
-        return  DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
+        return DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
                 .format(serverDateTime);
 
     }
