@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  *
@@ -67,7 +66,7 @@ public class JiraTicketsCollector implements Collector {
             try {
                 jiraReader = new JiraReader(template);
             } catch (JiraApiInstantiationFailedException ex) {
-                java.util.logging.Logger.getLogger(JiraTicketsCollector.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Jira Api instantiation failed exception {} " + ex.getMessage());
             }
             EventSinkAPI eventSinkAPI = new EventSinkAPI();
             EventSinkStandardOutput eventSinkAPIstd = new EventSinkStandardOutput();
@@ -82,7 +81,6 @@ public class JiraTicketsCollector implements Collector {
             int totalSuccessful = 0;
             int validRecords = 0;
             int totalRecordsRead = 0;
-            boolean isFound = false;
             int limit = 0;
             long totalJiraRecords = 0;
             Long currentMili = Calendar.getInstance().getTimeInMillis();
@@ -121,7 +119,7 @@ public class JiraTicketsCollector implements Collector {
                         }
                         if (totalTickets != 0) {
                             for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
-                                System.err.println("Iteration Started {} " + iteration);
+                                System.err.println("Iteration : " + iteration);
                                 try {
                                     jiraResponse = jiraReader.readJiraTickets(startAt, PluginConstants.METER_CHUNK_SIZE, adapter);
                                 } catch (JiraReadFailedException ex) {
@@ -179,12 +177,28 @@ public class JiraTicketsCollector implements Collector {
                                                 }
                                             }
                                         }
+                                        if (result.getSuccess() == Success.FALSE) {
+                                            for (com.bmc.truesight.saas.jira.beans.Error error : result.getErrors()) {
+                                                String id = "";
+                                                String msg = error.getMessage().trim();
+                                                id = eventsList.get(error.getIndex()).getProperties().get(Constants.FIELD_FETCH_KEY);
+                                                if (errorsMap.containsKey(msg)) {
+                                                    List<String> errorsId = errorsMap.get(msg);
+                                                    errorsId.add(id);
+                                                    errorsMap.put(msg, errorsId);
+                                                } else {
+                                                    List<String> errorsId = new ArrayList<String>();
+                                                    errorsId.add(id);
+                                                    errorsMap.put(msg, errorsId);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }//loop end here
                             System.err.println("________________________" + "" + " Ingestion to TrueSight Intelligence final status: Total JIRA Records = " + totalJiraRecords + ", Total Valid Records Sent to TSI = " + validRecords + ", Successfully TSI Accepted = " + totalSuccessful + ", larger than allowed limits count  = " + limit + " & Ids = " + limitExceededEventIds + " , TSI Rejected Records = " + totalFailure + " ______");
                             if (totalFailure > 0) {
-                                System.err.println("________________________  Errors (No of times seen), [Reference Ids] ______");
+                                System.err.println("________________________  Errors (Messages), [Reference Ids] ______");
                                 errorsMap.keySet().forEach(msg -> {
                                     System.err.println(msg + " (" + errorsMap.get(msg).size() + "), " + errorsMap.get(msg));
                                 });
