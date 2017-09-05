@@ -16,7 +16,6 @@
   "paramArray": {
     "itemTitle": [
       "hostName",
-      "requestType",
 	   "source"
     ],
     "schemaTitle": "Jira Instance"
