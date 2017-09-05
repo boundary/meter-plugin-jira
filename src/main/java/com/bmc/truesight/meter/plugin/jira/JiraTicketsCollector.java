@@ -117,7 +117,7 @@ public class JiraTicketsCollector implements Collector {
                         } catch (JiraApiInstantiationFailedException ex) {
                             LOG.error("Jira Api instantiation failed exception {} " + ex.getMessage());
                         }
-                        if (totalTickets != 0) {
+                        if (totalTickets != 0 && totalTickets != -1) {
                             for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
                                 System.err.println("Iteration : " + iteration);
                                 try {
@@ -204,7 +204,7 @@ public class JiraTicketsCollector implements Collector {
                                 });
                             }
                         } //Total END here
-                        else {
+                        else if(totalTickets == 0) {
                             System.err.println("{} " + PluginConstants.JIRA_IM_NO_DATA_AVAILABLE);
                             eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, PluginConstants.JIRA_IM_NO_DATA_AVAILABLE, Event.EventSeverity.INFO.toString()));
                         }
