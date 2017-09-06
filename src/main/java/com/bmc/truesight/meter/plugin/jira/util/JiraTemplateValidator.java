@@ -46,12 +46,6 @@ public class JiraTemplateValidator implements TemplateValidator {
             if (properties.get(key).startsWith("@") && !fieldItemMap.containsKey(properties.get(key))) {
                 throw new ValidationException(Util.format(Constants.PAYLOAD_PLACEHOLDER_DEFINITION_MISSING, new Object[]{properties.get(key)}));
             }
-            //Validate Application Name
-            if (key.equalsIgnoreCase(Constants.APPLICATION_ID)) {
-                if (properties.get(key).length() > 100) {
-                    throw new ValidationException(Util.format(Constants.APPLICATION_LENGTH_MEG, new Object[]{key.trim()}));
-                }
-            }
         }
 
         if (payload.getSeverity() != null && payload.getSeverity().startsWith("@") && !fieldItemMap.containsKey(payload.getSeverity())) {
