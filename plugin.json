@@ -98,7 +98,6 @@
         "{",
         "\t\"eventDefinition\": {",
         "\t\t\"properties\": {",
-        "\t\t\t\"app_id\": \"meter-plugin-jira\"",
         "\t\t}",
         "\t}",
         "}"
