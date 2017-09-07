@@ -22,9 +22,9 @@
   },
   "paramSchema": [
     {
-      "title": "Application Name",
+      "title": "App Id",
       "name": "app_id",
-      "description": "The Application Name",
+      "description": "App Id",
       "type": "string",
 	  "default": "Jira Integration",
       "required": true
