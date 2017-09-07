@@ -12,6 +12,7 @@ import com.bmc.truesight.saas.jira.beans.Success;
 import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
 import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
+import com.bmc.truesight.saas.jira.exception.JiraErrorResponse;
 import com.bmc.truesight.saas.jira.exception.JiraLoginFailedException;
 import com.bmc.truesight.saas.jira.exception.JiraReadFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
@@ -61,16 +62,17 @@ public class JiraTicketsCollector implements Collector {
 
     @Override
     public void run() {
+        Long pollInterval = config.getPollInterval() * 60 * 1000;
+        Long lastPoll = null;
         while (true) {
             JiraReader jiraReader = null;
             try {
                 jiraReader = new JiraReader(template);
             } catch (JiraApiInstantiationFailedException ex) {
-                LOG.error("Jira Api instantiation failed exception {} " + ex.getMessage());
+                System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
             }
             EventSinkAPI eventSinkAPI = new EventSinkAPI();
             EventSinkStandardOutput eventSinkAPIstd = new EventSinkStandardOutput();
-            System.err.println("{} validation is successful!");
             JiraEventResponse jiraResponse = null;
             JiraEntryEventAdapter adapter = new JiraEntryEventAdapter();
             boolean isConnectionOpen = false;
@@ -84,7 +86,13 @@ public class JiraTicketsCollector implements Collector {
             int limit = 0;
             long totalJiraRecords = 0;
             Long currentMili = Calendar.getInstance().getTimeInMillis();
-            Long pastMili = currentMili - (config.getPollInterval() * 60 * 1000);
+            Long pastMili = null;
+            if (lastPoll == null) {
+                pastMili = currentMili - pollInterval;
+            } else {
+                pastMili = lastPoll;
+            }
+            lastPoll = currentMili;
             List<String> limitExceededEventIds = new ArrayList<>();
             template.getConfig().setStartDateTime(new Date(pastMili));
             template.getConfig().setEndDateTime(new Date(currentMili));
@@ -102,20 +110,23 @@ public class JiraTicketsCollector implements Collector {
                     try {
                         isValid = jiraReader.validateCredentials();
                     } catch (JiraLoginFailedException ex) {
-                        LOG.error("Jira login faild exception {} " + ex.getMessage());
+                        System.err.println("Jira login faild exception {} " + ex.getMessage());
                     } catch (JiraApiInstantiationFailedException ex) {
-                        LOG.error("Jira Api instantiation failed exception {} " + ex.getMessage());
+                        System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
                     }
                     if (isValid) {
                         System.err.println("Starting event reading & ingestion to tsi for (DateTime:" + Utils.dateToString(template.getConfig().getStartDateTime()) + " to DateTime:" + Utils.dateToString(template.getConfig().getEndDateTime()) + ")");
                         try {
                             totalTickets = jiraReader.getAvailableRecordsCount();
                         } catch (JiraReadFailedException ex) {
-                            LOG.error("Exception occured while getting total tickets count {} " + ex.getMessage());
+                            System.err.println("Exception occured while getting total tickets count {} " + ex.getMessage());
                         } catch (ParseException ex) {
-                            LOG.error("Exception occured while parsing responce {} " + ex.getMessage());
+                            System.err.println("Exception occured while parsing responce {} " + ex.getMessage());
                         } catch (JiraApiInstantiationFailedException ex) {
-                            LOG.error("Jira Api instantiation failed exception {} " + ex.getMessage());
+                            System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
+                        } catch (JiraErrorResponse ex) {
+                            totalTickets = -1;
+                            System.err.println(ex.getMessage());
                         }
                         if (totalTickets != 0 && totalTickets != -1) {
                             for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
@@ -123,9 +134,9 @@ public class JiraTicketsCollector implements Collector {
                                 try {
                                     jiraResponse = jiraReader.readJiraTickets(startAt, PluginConstants.METER_CHUNK_SIZE, adapter);
                                 } catch (JiraReadFailedException ex) {
-                                    LOG.error("Exception occured while reading jira tickets {} " + ex.getMessage());
+                                    System.err.println("Exception occured while reading jira tickets {} " + ex.getMessage());
                                 } catch (JiraApiInstantiationFailedException ex) {
-                                    LOG.error("Jira Api instantiation failed exception, while reading jira tickets {} " + ex.getMessage());
+                                    System.err.println("Jira Api instantiation failed exception, while reading jira tickets {} " + ex.getMessage());
                                 }
                                 totalRecordsRead += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                 System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + PluginConstants.METER_CHUNK_SIZE + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
@@ -142,8 +153,9 @@ public class JiraTicketsCollector implements Collector {
                                     }
                                     System.err.println("following ids are larger than allowed limits [" + String.join(",", eventIds) + "]");
                                 }
-                                List<TSIEvent> eventsList = jiraResponse.getValidEventList();
-                                if (eventsList.size() > 0) {
+                                List<TSIEvent> eventsList;
+                                if (jiraResponse.getValidEventList().size() > 0) {
+                                    eventsList = Utils.updateCreatedDataASLastModified(jiraResponse.getValidEventList());
                                     Gson gson = new Gson();
                                     String eventJson = gson.toJson(eventsList);
                                     StringBuilder sendEventToTSI = new StringBuilder();
@@ -204,7 +216,7 @@ public class JiraTicketsCollector implements Collector {
                                 });
                             }
                         } //Total END here
-                        else if(totalTickets == 0) {
+                        else if (totalTickets == 0) {
                             System.err.println("{} " + PluginConstants.JIRA_IM_NO_DATA_AVAILABLE);
                             eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, PluginConstants.JIRA_IM_NO_DATA_AVAILABLE, Event.EventSeverity.INFO.toString()));
                         }
@@ -225,12 +237,22 @@ public class JiraTicketsCollector implements Collector {
                     }
                 }
             }
+            Long now = Calendar.getInstance().getTimeInMillis();
+            Long elapsedTime = now - lastPoll;
+            Long timeToSleep = null;
+            if (elapsedTime > pollInterval) {
+                timeToSleep = 0l;
+            } else {
+                timeToSleep = pollInterval - elapsedTime;
+            }
 
-            try {
-                TimeUnit.MINUTES.sleep(config.getPollInterval());
-            } catch (InterruptedException ex) {
-                System.err.println("Interrupted Exception :" + ex.getMessage());
-                eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, ex.getMessage(), Event.EventSeverity.ERROR.toString()));
+            if (timeToSleep > 0) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(timeToSleep);
+                } catch (InterruptedException ex) {
+                    System.err.println("Interrupted Exception :" + ex.getMessage());
+                    eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, ex.getMessage(), Event.EventSeverity.ERROR.toString()));
+                }
             }
         }//infinite while loop end
     }

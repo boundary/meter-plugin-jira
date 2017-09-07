@@ -26,7 +26,8 @@
       "name": "app_id",
       "description": "The Application Name",
       "type": "string",
-      "required": false
+	  "default": "Jira Integration",
+      "required": true
     },
     {
       "title": "Source",

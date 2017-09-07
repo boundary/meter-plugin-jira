@@ -85,7 +85,6 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
     @Override
     public void run() {
         ArrayList<JiraPluginConfigurationItem> items = configuration.getItems();
-        int counter = 0;
         if (items != null && items.size() > 0) {
             for (JiraPluginConfigurationItem config : items) {
                 boolean isTemplateParsingSuccessful = false;

@@ -18,6 +18,7 @@ import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
 import com.bmc.truesight.saas.jira.util.Constants;
+import com.bmc.truesight.saas.jira.util.Util;
 import com.boundary.plugin.sdk.Event;
 import com.boundary.plugin.sdk.EventSinkStandardOutput;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +31,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 
 /**
@@ -156,5 +159,16 @@ public class Utils {
         return DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
                 .format(serverDateTime);
 
+    }
+
+    public static List<TSIEvent> updateCreatedDataASLastModified(List<TSIEvent> eventsList) {
+        List<TSIEvent> updatedEventList = new ArrayList<>();
+        eventsList.stream().map((event) -> {
+            event.setCreatedAt(Long.toString(Util.convertIntoUTC(event.getProperties().get(Constants.LAST_MODIFIED_DATE_PROPERTY_KEY))));
+            return event;
+        }).forEach((event) -> {
+            updatedEventList.add(event);
+        });
+        return updatedEventList;
     }
 }
