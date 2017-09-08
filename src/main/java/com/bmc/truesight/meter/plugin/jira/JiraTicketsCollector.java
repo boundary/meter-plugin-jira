@@ -12,7 +12,6 @@ import com.bmc.truesight.saas.jira.beans.Success;
 import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
 import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
-import com.bmc.truesight.saas.jira.exception.JiraErrorResponse;
 import com.bmc.truesight.saas.jira.exception.JiraLoginFailedException;
 import com.bmc.truesight.saas.jira.exception.JiraReadFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
@@ -36,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  *
@@ -96,7 +94,6 @@ public class JiraTicketsCollector implements Collector {
                 pastMili = lastPoll;
             }
             lastPoll = currentMili;
-            System.out.println("pastMili" + pastMili);
             List<String> limitExceededEventIds = new ArrayList<>();
             template.getConfig().setStartDateTime(new Date(pastMili));
             template.getConfig().setEndDateTime(new Date(currentMili));
@@ -123,14 +120,12 @@ public class JiraTicketsCollector implements Collector {
                         try {
                             totalTickets = jiraReader.getAvailableRecordsCount();
                         } catch (JiraReadFailedException ex) {
+                            totalTickets = -1;
                             System.err.println("Exception occured while getting total tickets count {} " + ex.getMessage());
                         } catch (ParseException ex) {
                             System.err.println("Exception occured while parsing responce {} " + ex.getMessage());
                         } catch (JiraApiInstantiationFailedException ex) {
                             System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
-                        } catch (JiraErrorResponse ex) {
-                            totalTickets = -1;
-                            System.err.println(ex.getMessage());
                         }
                         if (totalTickets != 0 && totalTickets != -1) {
                             for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
@@ -162,7 +157,6 @@ public class JiraTicketsCollector implements Collector {
                                     eventsList = Utils.updateCreatedAtAsLastModifiedDate(jiraResponse.getValidEventList(), pastMili);
                                     Gson gson = new Gson();
                                     String eventJson = gson.toJson(eventsList);
-                                    System.out.println("eventJson" + eventJson);
                                     StringBuilder sendEventToTSI = new StringBuilder();
                                     sendEventToTSI.append(PluginConstants.JIRA_PROXY_EVENT_JSON_START_STRING).append(eventJson).append(PluginConstants.JIRA_PROXY_EVENT_JSON_END_STRING);
                                     String resultJson = eventSinkAPI.emit(sendEventToTSI.toString());
