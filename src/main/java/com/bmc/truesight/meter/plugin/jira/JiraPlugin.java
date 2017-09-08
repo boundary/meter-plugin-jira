@@ -5,6 +5,7 @@ import com.bmc.truesight.meter.plugin.jira.util.JiraTemplateValidator;
 import com.bmc.truesight.meter.plugin.jira.util.Utils;
 import com.bmc.truesight.saas.jira.beans.Template;
 import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
+import com.bmc.truesight.saas.jira.exception.JiraLoginFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.exception.ValidationException;
 import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
@@ -122,6 +123,8 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
                         System.err.println("Parsing failed -" + ex.getMessage());
                     } catch (JiraApiInstantiationFailedException ex) {
                         System.err.println("Jira Api instantiation failed exception -" + ex.getMessage());
+                    } catch (JiraLoginFailedException ex) {
+                        System.err.println(ex.getMessage());
                     }
 
                 } else {

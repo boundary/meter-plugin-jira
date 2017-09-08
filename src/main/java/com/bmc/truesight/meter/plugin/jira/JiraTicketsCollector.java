@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  *
@@ -49,7 +50,7 @@ public class JiraTicketsCollector implements Collector {
     private final Template template;
     public static final Charset UTF_8 = Charset.forName("UTF-8");
 
-    public JiraTicketsCollector(JiraPluginConfigurationItem config, Template template) throws ParsingException, com.bmc.truesight.saas.jira.exception.ParsingException, JiraApiInstantiationFailedException {
+    public JiraTicketsCollector(JiraPluginConfigurationItem config, Template template) throws ParsingException, com.bmc.truesight.saas.jira.exception.ParsingException, JiraApiInstantiationFailedException, JiraLoginFailedException {
         this.config = config;
         this.template = template;
         Utils.updateConfiguration(this.template, config);
@@ -70,6 +71,8 @@ public class JiraTicketsCollector implements Collector {
                 jiraReader = new JiraReader(template);
             } catch (JiraApiInstantiationFailedException ex) {
                 System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
+            } catch (JiraLoginFailedException ex) {
+                System.err.println(ex.getMessage());
             }
             EventSinkAPI eventSinkAPI = new EventSinkAPI();
             EventSinkStandardOutput eventSinkAPIstd = new EventSinkStandardOutput();
@@ -93,6 +96,7 @@ public class JiraTicketsCollector implements Collector {
                 pastMili = lastPoll;
             }
             lastPoll = currentMili;
+            System.out.println("pastMili" + pastMili);
             List<String> limitExceededEventIds = new ArrayList<>();
             template.getConfig().setStartDateTime(new Date(pastMili));
             template.getConfig().setEndDateTime(new Date(currentMili));
@@ -155,9 +159,10 @@ public class JiraTicketsCollector implements Collector {
                                 }
                                 List<TSIEvent> eventsList;
                                 if (jiraResponse.getValidEventList().size() > 0) {
-                                    eventsList = Utils.updateCreatedDataASLastModified(jiraResponse.getValidEventList());
+                                    eventsList = Utils.updateCreatedAtAsLastModifiedDate(jiraResponse.getValidEventList(), pastMili);
                                     Gson gson = new Gson();
                                     String eventJson = gson.toJson(eventsList);
+                                    System.out.println("eventJson" + eventJson);
                                     StringBuilder sendEventToTSI = new StringBuilder();
                                     sendEventToTSI.append(PluginConstants.JIRA_PROXY_EVENT_JSON_START_STRING).append(eventJson).append(PluginConstants.JIRA_PROXY_EVENT_JSON_END_STRING);
                                     String resultJson = eventSinkAPI.emit(sendEventToTSI.toString());
