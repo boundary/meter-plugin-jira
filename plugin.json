@@ -22,11 +22,12 @@
   },
   "paramSchema": [
     {
-      "title": "Application Name",
+      "title": "App Id",
       "name": "app_id",
-      "description": "The Application Name",
+      "description": "App Id",
       "type": "string",
-      "required": false
+	  "default": "Jira Integration",
+      "required": true
     },
     {
       "title": "Source",
@@ -97,7 +98,6 @@
         "{",
         "\t\"eventDefinition\": {",
         "\t\t\"properties\": {",
-        "\t\t\t\"app_id\": \"meter-plugin-jira\"",
         "\t\t}",
         "\t}",
         "}"

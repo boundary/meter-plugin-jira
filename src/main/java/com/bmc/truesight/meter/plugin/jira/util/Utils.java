@@ -15,9 +15,11 @@ import com.bmc.truesight.saas.jira.beans.Configuration;
 import com.bmc.truesight.saas.jira.beans.TSIEvent;
 import com.bmc.truesight.saas.jira.beans.Template;
 import com.bmc.truesight.saas.jira.exception.JiraApiInstantiationFailedException;
+import com.bmc.truesight.saas.jira.exception.JiraLoginFailedException;
 import com.bmc.truesight.saas.jira.exception.ParsingException;
 import com.bmc.truesight.saas.jira.impl.GenericTemplateParser;
 import com.bmc.truesight.saas.jira.util.Constants;
+import com.bmc.truesight.saas.jira.util.Util;
 import com.boundary.plugin.sdk.Event;
 import com.boundary.plugin.sdk.EventSinkStandardOutput;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,7 +32,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.codec.binary.Base64;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 /**
  *
@@ -96,7 +102,7 @@ public class Utils {
         return event;
     }
 
-    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException, JiraApiInstantiationFailedException {
+    public static Template updateConfiguration(Template template, JiraPluginConfigurationItem config) throws ParsingException, JiraApiInstantiationFailedException, JiraLoginFailedException {
         Configuration configuration = template.getConfig();
         configuration.setJiraHostName(config.getHostName());
         GenericTemplateParser parser = new GenericTemplateParser();
@@ -156,5 +162,19 @@ public class Utils {
         return DateTimeFormatter.ofPattern(JQL_TIMESTAMP_FORMAT)
                 .format(serverDateTime);
 
+    }
+
+    public static List<TSIEvent> updateCreatedAtAsLastModifiedDate(List<TSIEvent> eventsList, long startMiliSeconds) {
+        List<TSIEvent> updatedEventList = new ArrayList<>();
+        eventsList.stream().map((event) -> {
+            long createdDate = Long.parseLong(event.getCreatedAt());
+            if (createdDate < startMiliSeconds) {
+                event.setCreatedAt(event.getProperties().get(Constants.LAST_MODIFIED_DATE_PROPERTY_KEY));
+            }
+            return event;
+        }).forEach((event) -> {
+            updatedEventList.add(event);
+        });
+        return updatedEventList;
     }
 }

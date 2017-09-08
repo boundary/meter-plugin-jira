@@ -33,8 +33,8 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 
 |Field Name        |Description                                                                    |
 |:-----------------|:------------------------------------------------------------------------------|
-|Application Name  |The TrueSight Intelligence App using which the events will be tagged. If the App does not exist, a new App is created                                            		   	   									 |
-|Jira Server Name  |The host of Jira server                                            		   	   |
+|App Id			   |The TrueSight Intelligence App using which the events will be tagged. If the App does not exist, a new App is created                                            		   	   									 |
+|Host Name		   |The host of Jira server                                            		   	   |
 |Port              |The port of Jira server                                            		       |
 |Username          |The user of Jira server                                            		       |
 |Password          |The password of Jira server                                        		       |
