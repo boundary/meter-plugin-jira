@@ -1,7 +1,7 @@
 {
   "name": "BMC Jira Plugin",
   "version": "0.9.1",
-  "meterVersionRequired": "4.7.0-852",
+  "meterVersionRequired": "4.7.0-853",
   "unsupportedPlatforms": [],
   "tags": "Jira",
   "description": "Ingests tickets from Jira",
