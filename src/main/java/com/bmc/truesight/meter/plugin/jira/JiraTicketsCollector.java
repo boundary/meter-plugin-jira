@@ -85,6 +85,7 @@ public class JiraTicketsCollector implements Collector {
             int validRecords = 0;
             int totalRecordsRead = 0;
             int limit = 0;
+            int chunkSize = PluginConstants.METER_CHUNK_SIZE;
             long totalJiraRecords = 0;
             Long currentMili = Calendar.getInstance().getTimeInMillis();
             Long pastMili = null;
@@ -128,20 +129,34 @@ public class JiraTicketsCollector implements Collector {
                             System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
                         }
                         if (totalTickets != 0 && totalTickets != -1) {
-                            for (int i = 0; i <= totalTickets; i += PluginConstants.METER_CHUNK_SIZE) {
+                            for (int i = 0; i <= totalTickets; i += chunkSize) {
                                 System.err.println("Iteration : " + iteration);
                                 try {
-                                    jiraResponse = jiraReader.readJiraTickets(startAt, PluginConstants.METER_CHUNK_SIZE, adapter);
+                                    jiraResponse = jiraReader.readJiraTickets(startAt, chunkSize, adapter);
                                 } catch (JiraReadFailedException ex) {
                                     System.err.println("Exception occured while reading jira tickets {} " + ex.getMessage());
                                 } catch (JiraApiInstantiationFailedException ex) {
                                     System.err.println("Jira Api instantiation failed exception, while reading jira tickets {} " + ex.getMessage());
                                 }
                                 totalRecordsRead += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
-                                System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + PluginConstants.METER_CHUNK_SIZE + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
+                                if (jiraResponse.getTotalCountAvailable() != totalTickets) {
+                                    System.err.println("Total available tickets matching the filter criteria has changed from " + totalTickets + " to " + jiraResponse.getTotalCountAvailable());
+                                    totalTickets = jiraResponse.getTotalCountAvailable();
+                                }
                                 startAt = startAt + (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                 validRecords += jiraResponse.getValidEventList().size();
-                                totalJiraRecords += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
+                                int recordsCount = jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventIdsList().size();
+                                totalJiraRecords += recordsCount;
+                                if (recordsCount < chunkSize && totalRecordsRead < totalTickets) {
+                                    System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + chunkSize + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
+                                    chunkSize = recordsCount;
+                                } else if (recordsCount <= chunkSize) {
+                                    System.err.println(" Request Sent to jira (startFrom:" + startAt + ",chunkSize:" + chunkSize + "), Response Got(Valid Events:" + jiraResponse.getValidEventList().size() + ", Invalid Events:" + jiraResponse.getInvalidEventList().size() + ", totalRecordsRead: (" + totalRecordsRead + "/" + totalTickets + ")");
+                                }
+                                if (totalJiraRecords < totalTickets && (totalJiraRecords + chunkSize) > totalTickets) {
+                                    //assuming the long value would be in int range always
+                                    chunkSize = ((int) (totalTickets) - totalRecordsRead);
+                                }
                                 iteration += 1;
                                 limit += jiraResponse.getInvalidEventList().size();
                                 limitExceededEventIds.addAll(jiraResponse.getInvalidEventIdsList());
