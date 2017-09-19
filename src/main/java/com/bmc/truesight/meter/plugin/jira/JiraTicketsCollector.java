@@ -130,7 +130,6 @@ public class JiraTicketsCollector implements Collector {
                             System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
                         }
                         if (totalTickets != 0 && totalTickets != -1) {
-                            //for (int i = 0; i <= totalTickets; i += chunkSize) {
                             while (readNext) {
                                 System.err.println("Iteration : " + iteration);
                                 try {
