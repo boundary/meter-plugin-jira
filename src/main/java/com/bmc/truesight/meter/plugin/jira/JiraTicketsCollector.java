@@ -88,6 +88,7 @@ public class JiraTicketsCollector implements Collector {
             int chunkSize = PluginConstants.METER_CHUNK_SIZE;
             long totalJiraRecords = 0;
             Long currentMili = Calendar.getInstance().getTimeInMillis();
+            boolean readNext = true;
             Long pastMili = null;
             if (lastPoll == null) {
                 pastMili = currentMili - pollInterval;
@@ -129,7 +130,8 @@ public class JiraTicketsCollector implements Collector {
                             System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
                         }
                         if (totalTickets != 0 && totalTickets != -1) {
-                            for (int i = 0; i <= totalTickets; i += chunkSize) {
+                            //for (int i = 0; i <= totalTickets; i += chunkSize) {
+                            while (readNext) {
                                 System.err.println("Iteration : " + iteration);
                                 try {
                                     jiraResponse = jiraReader.readJiraTickets(startAt, chunkSize, adapter);
@@ -156,6 +158,12 @@ public class JiraTicketsCollector implements Collector {
                                 if (totalJiraRecords < totalTickets && (totalJiraRecords + chunkSize) > totalTickets) {
                                     //assuming the long value would be in int range always
                                     chunkSize = ((int) (totalTickets) - totalRecordsRead);
+                                } else if (totalRecordsRead >= totalTickets) {
+                                    readNext = false;
+                                }
+                                if (recordsCount == 0) {
+                                    readNext = false;
+                                    continue;
                                 }
                                 iteration += 1;
                                 limit += jiraResponse.getInvalidEventList().size();
