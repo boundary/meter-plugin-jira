@@ -39,9 +39,9 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 |Username          |The user of Jira server                                            		       |
 |Password          |The password of Jira server                                        		       |
 |Poll Interval     |How often (in minutes) to poll for collecting the tickets                      |
-|Field Mapping     |Type of fields will be collected(more info please check in template section)   |
-|protocolType      |Type of protocals(https or http) 											   |
-|Source	           |The jira instance name														   | 
+|Field Mapping     |Type of fields will be collected (more info please check in template section)  |
+|protocolType      |Type of protocols (https or http) 											                                  |
+|Source	           |The jira instance name														                                           | 
 
 
 
@@ -50,5 +50,5 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 
 
 ### References
-[Jira Plugin Documentation](https://docs.bmc.com/docs/display/bti10/jira+Plugin)
+[Jira Plugin Documentation](https://docs.bmc.com/docs/display/bti10/JIRA+Plugin)
 
