@@ -50,5 +50,5 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 
 
 ### References
-[Jira Plugin Documentation](https://docs.bmc.com/docs/display/bti10/jira+Plugin)
+[Jira Plugin Documentation](https://docs.bmc.com/docs/display/bti10/JIRA+Plugin)
 
