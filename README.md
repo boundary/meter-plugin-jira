@@ -40,7 +40,7 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 |Password          |The password of Jira server                                        		       |
 |Poll Interval     |How often (in minutes) to poll for collecting the tickets                      |
 |Field Mapping     |Type of fields will be collected(more info please check in template section)   |
-|protocolType      |Type of protocals(https or http) 											   |
+|protocolType      |Type of protocols(https or http) 											   |
 |Source	           |The jira instance name														   | 
 
 
