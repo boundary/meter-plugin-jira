@@ -1,6 +1,7 @@
 package com.bmc.truesight.meter.plugin.jira;
 
 import com.bmc.truesight.meter.plugin.jira.beans.RpcResponse;
+import com.bmc.truesight.meter.plugin.jira.util.Metrics;
 import com.bmc.truesight.meter.plugin.jira.util.PluginConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import com.boundary.plugin.sdk.Event;
 import com.boundary.plugin.sdk.EventSinkAPI;
 import com.boundary.plugin.sdk.EventSinkStandardOutput;
 import com.boundary.plugin.sdk.Measurement;
+import com.boundary.plugin.sdk.MeasurementSinkAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import java.io.IOException;
@@ -62,15 +64,26 @@ public class JiraTicketsCollector implements Collector {
     @Override
     public void run() {
         Long pollInterval = config.getPollInterval() * 60 * 1000;
+        MeasurementSinkAPI measurementSinkApi = new MeasurementSinkAPI();
         Long lastPoll = null;
+        String source = null;
+        if (config.getSource() != null && !config.getSource().isEmpty()) {
+            source = config.getSource();
+            source=source.replaceAll(" ","_");  
+        } else {
+            source = template.getConfig().getJiraHostName() + "_" + config.getApp_id();
+        }
         while (true) {
             JiraReader jiraReader = null;
+            measurementSinkApi.send(new Measurement(Metrics.JIRA_HEARTBEAT.getMetricName(), PluginConstants.METRIC_VALUE, source));
             try {
                 jiraReader = new JiraReader(template);
             } catch (JiraApiInstantiationFailedException ex) {
                 System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
+                measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
             } catch (JiraLoginFailedException ex) {
                 System.err.println(ex.getMessage());
+                measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
             }
             EventSinkAPI eventSinkAPI = new EventSinkAPI();
             EventSinkStandardOutput eventSinkAPIstd = new EventSinkStandardOutput();
@@ -102,9 +115,10 @@ public class JiraTicketsCollector implements Collector {
             try {
                 isConnectionOpen = eventSinkAPI.openConnection();
                 if (isConnectionOpen) {
-                    System.err.println("JSON RPC Socket connection successful");
+                    System.err.println("JSON RPC Socket connection successful");                    
                 } else {
                     System.err.println("JSON RPC Socket connection failed");
+                    measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                     break;
                 }
                 if (isConnectionOpen) {
@@ -114,8 +128,10 @@ public class JiraTicketsCollector implements Collector {
                         isValid = jiraReader.validateCredentials();
                     } catch (JiraLoginFailedException ex) {
                         System.err.println("Jira login faild exception {} " + ex.getMessage());
+                        measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                     } catch (JiraApiInstantiationFailedException ex) {
                         System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
+                        measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                     }
                     if (isValid) {
                         System.err.println("Starting event reading & ingestion to tsi for (DateTime:" + Utils.dateToString(template.getConfig().getStartDateTime()) + " to DateTime:" + Utils.dateToString(template.getConfig().getEndDateTime()) + ")");
@@ -124,10 +140,13 @@ public class JiraTicketsCollector implements Collector {
                         } catch (JiraReadFailedException ex) {
                             totalTickets = -1;
                             System.err.println("Exception occured while getting total tickets count {} " + ex.getMessage());
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                         } catch (ParseException ex) {
                             System.err.println("Exception occured while parsing responce {} " + ex.getMessage());
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                         } catch (JiraApiInstantiationFailedException ex) {
                             System.err.println("Jira Api instantiation failed exception {} " + ex.getMessage());
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                         }
                         if (totalTickets != 0 && totalTickets != -1) {
                             while (readNext) {
@@ -136,8 +155,10 @@ public class JiraTicketsCollector implements Collector {
                                     jiraResponse = jiraReader.readJiraTickets(startAt, chunkSize, adapter);
                                 } catch (JiraReadFailedException ex) {
                                     System.err.println("Exception occured while reading jira tickets {} " + ex.getMessage());
+                                    measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                                 } catch (JiraApiInstantiationFailedException ex) {
                                     System.err.println("Jira Api instantiation failed exception, while reading jira tickets {} " + ex.getMessage());
+                                    measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                                 }
                                 totalRecordsRead += (jiraResponse.getValidEventList().size() + jiraResponse.getInvalidEventList().size());
                                 if (jiraResponse.getTotalCountAvailable() != totalTickets) {
@@ -236,6 +257,9 @@ public class JiraTicketsCollector implements Collector {
                                     System.err.println(msg + " (" + errorsMap.get(msg).size() + "), " + errorsMap.get(msg));
                                 });
                             }
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_SUCCESS_COUNT.getMetricName(), totalSuccessful, source));
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_FAILURE_COUNT.getMetricName(), totalFailure, source));
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_NONE_VALUE, source));
                         } //Total END here
                         else if (totalTickets == 0) {
                             System.err.println("{} " + PluginConstants.JIRA_IM_NO_DATA_AVAILABLE);
@@ -248,6 +272,7 @@ public class JiraTicketsCollector implements Collector {
             } catch (IOException ex) {
                 System.err.println("Interrupted Exception :" + ex.getMessage());
                 eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, ex.getMessage(), Event.EventSeverity.ERROR.toString()));
+                measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
             } finally {
                 if (isConnectionOpen) {
                     boolean isConnectionClosed = eventSinkAPI.closeConnection();
@@ -273,6 +298,7 @@ public class JiraTicketsCollector implements Collector {
                 } catch (InterruptedException ex) {
                     System.err.println("Interrupted Exception :" + ex.getMessage());
                     eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, ex.getMessage(), Event.EventSeverity.ERROR.toString()));
+                    measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
                 }
             }
         }//infinite while loop end
