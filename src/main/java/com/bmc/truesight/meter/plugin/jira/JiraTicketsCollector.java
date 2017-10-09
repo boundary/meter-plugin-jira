@@ -69,7 +69,7 @@ public class JiraTicketsCollector implements Collector {
         String source = null;
         if (config.getSource() != null && !config.getSource().isEmpty()) {
             source = config.getSource();
-            source=source.replaceAll(" ","_");  
+            source = source.replaceAll(" ", "_");
         } else {
             source = template.getConfig().getJiraHostName() + "_" + config.getApp_id();
         }
@@ -115,11 +115,10 @@ public class JiraTicketsCollector implements Collector {
             try {
                 isConnectionOpen = eventSinkAPI.openConnection();
                 if (isConnectionOpen) {
-                    System.err.println("JSON RPC Socket connection successful");                    
+                    System.err.println("JSON RPC Socket connection successful");
                 } else {
                     System.err.println("JSON RPC Socket connection failed");
                     measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
-                    break;
                 }
                 if (isConnectionOpen) {
                     Map<String, List<String>> errorsMap = new HashMap<>();
@@ -257,13 +256,17 @@ public class JiraTicketsCollector implements Collector {
                                     System.err.println(msg + " (" + errorsMap.get(msg).size() + "), " + errorsMap.get(msg));
                                 });
                             }
-                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_SUCCESS_COUNT.getMetricName(), totalSuccessful, source));
-                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_FAILURE_COUNT.getMetricName(), totalFailure, source));
-                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_NONE_VALUE, source));
                         } //Total END here
                         else if (totalTickets == 0) {
                             System.err.println("{} " + PluginConstants.JIRA_IM_NO_DATA_AVAILABLE);
                             eventSinkAPIstd.emit(Utils.eventMeterTSI(PluginConstants.JIRA_PLUGIN_TITLE_MSG, PluginConstants.JIRA_IM_NO_DATA_AVAILABLE, Event.EventSeverity.INFO.toString()));
+                        }
+                        measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_SUCCESS_COUNT.getMetricName(), totalSuccessful, source));
+                        measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_FAILURE_COUNT.getMetricName(), totalFailure, source));
+                        if (totalTickets == - 1) {
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_VALUE, source));
+                        } else {
+                            measurementSinkApi.send(new Measurement(Metrics.JIRA_INGESTION_EXCEPTION.getMetricName(), PluginConstants.METRIC_NONE_VALUE, source));
                         }
                     }
                 } else {
