@@ -15,5 +15,7 @@ public class PluginConstants {
     public static String JSON_ISSUES_TOTAL_FILED_KEY = "total";
     public static int  METER_CHUNK_SIZE=100;
     public static String ERROR_NODE="errorMessages";
+    public static int METRIC_VALUE=1;
+    public static int METRIC_NONE_VALUE=0;
     
 }

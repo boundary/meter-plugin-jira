@@ -43,6 +43,14 @@ If you want to import historical Jira data into TrueSight Intelligence, it is re
 |protocolType      |Type of protocols (https or http) 											                                  |
 |Source	           |The jira instance name														                                           | 
 
+### Metrics Collected
+
+|Metrics Name                             |Description                                             |
+|:----------------------------------------|:-------------------------------------------------------|
+|Jira Plugin Heartbeat                  | Heartbeat metric(with value 1) for Jira Plugin           |
+|Jira Successful Events ingestion count | Total events successfully ingested to TSI     		   |
+|Jira Events ingestion failure count    | Failed event ingestion count to TSI     	               |
+|Jira Events ingestion exception        | Plugin exception (values as 0/1, 0 as no exception)      |
 
 
 ### Templates

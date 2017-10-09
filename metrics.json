@@ -1,2 +1,38 @@
 {
+"JIRA_HEARTBEAT": {
+    "displayName": "Jira Plugin Heartbeat",
+    "displayNameShort": "Jira Heartbeat",
+    "description": "Displays Jira plugin heartbeat ",
+    "defaultResolutionMS": 900000,
+    "defaultAggregate": "avg",
+    "unit": "number",
+    "isDisabled": false
+  },
+  "JIRA_INGESTION_SUCCESS_COUNT": {
+    "displayName": "Jira Successful Events ingestion count",
+    "displayNameShort": "Jira Success count",
+    "description": "Jira Successful Events ingestion count",
+    "defaultResolutionMS": 900000,
+    "defaultAggregate": "sum",
+    "unit": "number",
+    "isDisabled": false
+  },
+  "JIRA_INGESTION_FAILURE_COUNT": {
+    "displayName": "Jira Events ingestion failure count",
+    "displayNameShort": "Jira fail count",
+    "description": "Jira Events ingestion failure count",
+    "defaultResolutionMS": 900000,
+    "defaultAggregate": "sum",
+    "unit": "number",
+    "isDisabled": false
+  },
+  "JIRA_INGESTION_EXCEPTION": {
+    "displayName": "Jira Events ingestion exception",
+    "displayNameShort": "Jira Ingstn Exptn",
+    "description": "Jira Events ingestion exception",
+    "defaultResolutionMS": 900000,
+    "defaultAggregate": "avg",
+    "unit": "number",
+    "isDisabled": false
+  }
 }
