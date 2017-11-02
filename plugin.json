@@ -1,14 +1,15 @@
 {
   "name": "BMC Jira Plugin",
-  "version": "0.9.2",
-  "meterVersionRequired": "4.7.0-852",
+  "version": "0.9.3",
+  "meterVersionRequired": "4.7.1-865",
   "unsupportedPlatforms": [],
   "tags": "Jira",
   "description": "Ingests tickets from Jira",
   "command_lua": "",
   "postExtract_lua": "",
-  "command": "java -jar target/meter-plugin-jira-0.9.2.jar",
+  "command": "java -jar target/meter-plugin-jira-0.9.3.jar",
   "postExtract": "",
+  "secure": true,
   "ignore": "",
   "icon": "icon.png",
   "metrics": [

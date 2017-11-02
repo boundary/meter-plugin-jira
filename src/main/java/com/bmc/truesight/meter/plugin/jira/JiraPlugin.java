@@ -66,8 +66,15 @@ public class JiraPlugin implements Plugin<JiraPluginConfiguration> {
     @Override
     public void loadConfiguration() {
         Gson gson = new Gson();
+        String param = System.getenv(PluginConstants.TSP_PLUGIN_PARAMS);
+        LOG.debug("System environment has parameter available as  ,{}",param);
         try {
-            JiraPluginConfiguration pluginConfiguration = gson.fromJson(new FileReader("param.json"), JiraPluginConfiguration.class);
+            JiraPluginConfiguration pluginConfiguration = null;
+        	if(param == null || param == ""){
+        		pluginConfiguration = gson.fromJson(new FileReader("param.json"), JiraPluginConfiguration.class);
+        	}else{
+        		pluginConfiguration = gson.fromJson(param, JiraPluginConfiguration.class);
+        	}
             setConfiguration(pluginConfiguration);
         } catch (JsonParseException e) {
             System.err.println("Exception occured while getting the param.json data" + e.getMessage());
