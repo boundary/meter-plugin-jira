@@ -12,6 +12,7 @@ public class PluginConstants {
     public final static String JIRA_IM_NO_DATA_AVAILABLE = "No data available";
     public final static String JIRA_CM_NO_DATA_AVAILABLE = "No data available for jira software";
     public static final int JIRA_WAIT_MS_BEFORE_NEXT_RETRY = 100;
+	public static final String TSP_PLUGIN_PARAMS = "TSP_PLUGIN_PARAMS";
     public static String JSON_ISSUES_TOTAL_FILED_KEY = "total";
     public static int  METER_CHUNK_SIZE=100;
     public static String ERROR_NODE="errorMessages";

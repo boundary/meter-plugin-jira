@@ -21,7 +21,7 @@ The plugin allows multiple Jira instances data to be collected with independent 
 
 * [How to install java?](https://www3.ntu.edu.sg/home/ehchua/programming/howto/JDK_Howto.html)
 
-#### TrueSight Pulse Meter versions v4.7.0-852 or later
+#### TrueSight Pulse Meter versions v4.7.1-865 or later
 
 - To install new meter go to Settings->Installation or [see instructions](https://help.boundary.com/hc/en-us/sections/200634331-Installation).
 - To upgrade the meter to the latest version - [see instructions](https://help.boundary.com/hc/en-us/articles/201573102-Upgrading-the-Boundary-Meter).
